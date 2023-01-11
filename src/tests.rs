@@ -32,9 +32,15 @@ fn test_expression_nonrecursive_parse() {
 }
 
 #[test]
-fn test_expression_recursive_parse() {
+fn test_expression_recursive_parse_1() {
     let expression = Expression::from("(A & B & !C) | (A & B | (!C | A)) & (A | B)");
     assert_eq!(include_str!("test_files/expression_1.tree").trim_end(), format!("{:#?}", expression));
+}
+
+#[test]
+fn test_expression_recursive_parse_2() {
+    let expression = Expression::from("!(A & B) | ((A | !C | !D) & A) & B & C");
+    assert_eq!(include_str!("test_files/expression_2.tree").trim_end(), format!("{:#?}", expression));
 }
 
 #[test]
