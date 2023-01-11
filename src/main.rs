@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 
-pub mod tests;
 pub mod expressions;
 
 pub use expressions::Expression;
