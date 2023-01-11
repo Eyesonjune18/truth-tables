@@ -1,10 +1,12 @@
+use std::collections::HashMap;
+
 // Represents a logical expression, which is a recursive tree of propositions/subexpressions and operators
-// Unique propositions are stored in order to later evaluate the expression properly
+// TODO: Explain propositions field
 #[derive(Debug)]
 pub struct Expression {
     elements: Vec<ExpressionElement>,
     operators: Vec<Operator>,
-    propositions: Vec<char>,
+    propositions: HashMap<PropositionIdentifier, Option<bool>>,
 }
 
 // Represents a proposition or a subexpression, and whether it is negated or not
@@ -14,13 +16,6 @@ struct ExpressionElement {
     negation: bool,
 }
 
-// Represents either a single source proposition, or another Expression called a subexpression
-#[derive(Debug)]
-enum PropositionToken {
-    Proposition(char),
-    Subexpression(Expression),
-}
-
 // Represents a logical operator
 #[derive(PartialEq, Debug)]
 enum Operator {
@@ -28,14 +23,63 @@ enum Operator {
     Or,
 }
 
+// Represents either a single source proposition, or another Expression called a subexpression
+#[derive(Debug)]
+enum PropositionToken {
+    Proposition(PropositionIdentifier),
+    Subexpression(Expression),
+}
+
+// Represents one of the allowed root proposition letters ("identifiers")
+#[derive(Eq, PartialEq, Hash, Debug)]
+enum PropositionIdentifier {
+    A,
+    B,
+    C,
+    D,
+}
+
 impl ExpressionElement {
     fn new(element: PropositionToken, negation: bool) -> Self {
         Self { element, negation }
     }
+
+    // Converts a char to a proposition ExpressionElement
+    // TODO: Add range checking here? Probably not necessary
+    fn from_proposition(proposition_letter: char, negation: bool) -> Self {
+        Self {
+            element: PropositionToken::Proposition(PropositionIdentifier::from(proposition_letter)),
+            negation,
+        }
+    }
+}
+
+impl PropositionIdentifier {
+    // Returns the masked value of the proposition for a given permutation of propositions
+    // TODO: How to handle missing propositions?
+    fn mask(&self, permutation: u8) -> bool {
+        match self {
+            Self::A => permutation & 0b0001 != 0,
+            Self::B => permutation & 0b0010 != 0,
+            Self::C => permutation & 0b0100 != 0,
+            Self::D => permutation & 0b1000 != 0,
+        }
+    }
+
+    // Converts a char to a PropositionIdentifier
+    fn from(c: char) -> Self {
+        match c {
+            'a' | 'A' => Self::A,
+            'b' | 'B' => Self::B,
+            'c' | 'C' => Self::C,
+            'd' | 'D' => Self::D,
+            _ => unreachable!("[INTERNAL ERROR] Invalid proposition character '{}'", c),
+        }
+    }
 }
 
 impl Expression {
-    fn new(elements: Vec<ExpressionElement>, operators: Vec<Operator>, propositions: Vec<char>) -> Self {
+    fn new(elements: Vec<ExpressionElement>, operators: Vec<Operator>, propositions: HashMap<PropositionIdentifier, Option<bool>>) -> Self {
         Self {
             elements,
             operators,
@@ -58,7 +102,7 @@ impl Expression {
             match c {
                 // If the proposition character is within the allowed values (based on the assignment instructions)
                 'A'..='D' | 'a'..='d' => {
-                    elements.push(ExpressionElement::new(Proposition(c.to_ascii_lowercase()), is_negated));
+                    elements.push(ExpressionElement::from_proposition(c, is_negated));
                     is_negated = false;
                 }
                 // If a subexpression is encountered
@@ -93,7 +137,7 @@ impl Expression {
             panic!("Mismatched proposition/operator count in expression");
         }
 
-        Self::new(elements, operators, get_unique_propositions(expression_string))
+        Self::new(elements, operators, get_unique_propositions_unvalued(expression_string))
     }
 
     // Evaluates a single permutation of propositions
@@ -133,18 +177,14 @@ fn get_subexpression(expression: &str) -> String {
 }
 
 // Returns a list of all unique 
-fn get_unique_propositions(expression: &str) -> Vec<char> {
-    let mut propositions: Vec<char> = Vec::new();
+fn get_unique_propositions_unvalued(expression: &str) -> HashMap<PropositionIdentifier, Option<bool>> {
+    let mut propositions: HashMap<PropositionIdentifier, Option<bool>> = HashMap::new();
 
     for c in expression.chars() {
-        let c = c.to_ascii_lowercase();
-
         match c {
             'A'..='D' | 'a'..='d' => {
-                if !propositions.contains(&c) {
-                    propositions.push(c);
-                }
-            }
+                propositions.insert(PropositionIdentifier::from(c), None);
+            },
             _ => (),
         }
     }
@@ -166,11 +206,11 @@ mod tests {
         let mut proposition_num = 0;
 
         for proposition in &expression.elements {
-            match proposition.element {
+            match &proposition.element {
                 PropositionToken::Proposition(p) => {
                     match proposition_num {
-                        0 => assert_eq!(p, 'a'),
-                        1 => assert_eq!(p, 'b'),
+                        0 => assert_eq!(p, &PropositionIdentifier::A),
+                        1 => assert_eq!(p, &PropositionIdentifier::B),
                         _ => assert!(false),
                     }
 
