@@ -18,10 +18,7 @@ struct Proposition {
 
 impl Proposition {
     fn new(letter: char, negation: bool) -> Self {
-        Self {
-            letter,
-            negation,
-        }
+        Self { letter, negation }
     }
 }
 
@@ -36,16 +33,14 @@ enum Operator {
 #[derive(Debug)]
 struct Expression {
     propositions: Vec<ExpressionToken>,
-    operators: Vec<Option<Operator>>,
+    operators: Vec<Operator>,
 }
 
 impl Expression {
     // Creates an Expression from a string
     fn from(string: &str) -> Expression {
-        let mut expression = Expression {
-            propositions: Vec::new(),
-            operators: Vec::new(),
-        };
+        let mut propositions: Vec<ExpressionToken> = Vec::new();
+        let mut operators: Vec<Operator> = Vec::new();
 
         let mut input_chars = string.char_indices();
         let mut is_negated = false;
@@ -55,40 +50,46 @@ impl Expression {
             match c {
                 // If the proposition character is within the allowed values (based on the assignment instructions)
                 'A'..='D' => {
-                    expression.propositions.push(ExpressionToken::Proposition(Proposition::new(c, is_negated)));
+                    propositions.push(ExpressionToken::Proposition(Proposition::new(
+                        c, is_negated,
+                    )));
 
-                    // TODO: Functionize this?
-                    if is_negated {
-                        expression.operators.push(None);
-                        is_negated = false;
-                    }
-                },
+                    is_negated = false;
+                }
+                // If a subexpression is encountered
                 '(' => {
                     // Get the current subexpression and recursively parse it
                     let subexpression = Self::get_subexpression(&string[i..]);
-                    expression.propositions.push(ExpressionToken::Subexpression(Self::from(&subexpression)));
+                    propositions.push(ExpressionToken::Subexpression(Self::from(&subexpression)));
 
-                    if is_negated {
-                        expression.operators.push(None);
-                        is_negated = false;
-                    }
-                },
+                    // Skip the subexpression for its parent's parsing
+                    input_chars.nth(subexpression.len() - 1);
+
+                    is_negated = false;
+                }
                 // Queue a negation to add to the next ExpressionToken
                 '!' => {
                     is_negated = true;
-                },
+                }
                 '&' => {
-                    expression.operators.push(Some(Operator::And));
-                },
+                    operators.push(Operator::And);
+                }
                 '|' => {
-                    expression.operators.push(Some(Operator::Or));
-                },
+                    operators.push(Operator::Or);
+                }
                 // TODO: Add input validation for garbage chars
                 _ => (),
             }
         }
 
-        expression
+        if propositions.len() != operators.len() + 1 {
+            panic!("Mismatched proposition/operator count in expression");
+        }
+
+        Self {
+            propositions,
+            operators,
+        }
     }
 
     // Return the substring between the first pair of parentheses, excluding the parentheses themselves
@@ -108,7 +109,7 @@ impl Expression {
                 ')' => depth -= 1,
                 _ => (),
             }
-            
+
             // Create the substring from the text inside the outerost parentheses
             // Stop as soon as the corresponding close parentheses have been found
             if depth > 0 {
@@ -123,7 +124,7 @@ impl Expression {
 }
 
 fn main() {
-    let args:Vec<String> = std::env::args().collect();
+    let args: Vec<String> = std::env::args().collect();
 
     if args.len() != 2 {
         panic!("Usage: {} <expression>", args[0]);
