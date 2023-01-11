@@ -1,15 +1,8 @@
-// Represents a logical operator
-#[derive(PartialEq, Debug)]
-enum Operator {
-    And,
-    Or,
-}
-
-// Represents either a single source proposition, or another Expression called a subexpression
+// Represents a logical expression, which is a recursive tree of propositions/subexpressions and operators
 #[derive(Debug)]
-enum PropositionToken {
-    Proposition(char),
-    Subexpression(Expression),
+pub struct Expression {
+    propositions: Vec<ExpressionElement>,
+    operators: Vec<Operator>,
 }
 
 // Represents a proposition or a subexpression, and whether it is negated or not
@@ -19,17 +12,24 @@ struct ExpressionElement {
     negation: bool,
 }
 
+// Represents either a single source proposition, or another Expression called a subexpression
+#[derive(Debug)]
+enum PropositionToken {
+    Proposition(char),
+    Subexpression(Expression),
+}
+
+// Represents a logical operator
+#[derive(PartialEq, Debug)]
+enum Operator {
+    And,
+    Or,
+}
+
 impl ExpressionElement {
     fn new(element: PropositionToken, negation: bool) -> Self {
         Self { element, negation }
     }
-}
-
-// Represents a logical expression, which is a recursive tree of propositions/subexpressions and operators
-#[derive(Debug)]
-pub struct Expression {
-    propositions: Vec<ExpressionElement>,
-    operators: Vec<Operator>,
 }
 
 impl Expression {
