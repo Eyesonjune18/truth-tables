@@ -72,6 +72,8 @@ impl Expression {
 
                     is_negated = false;
                 }
+                // If a subexpression is not properly skipped
+                ')' => panic!("Unmatched ')' in expression"),
                 // Queue a negation to add to the next ExpressionToken
                 '!' | '/' => {
                     is_negated = true;
@@ -82,8 +84,9 @@ impl Expression {
                 '|' | '+' => {
                     operators.push(Operator::Or);
                 }
-                // TODO: Add input validation for garbage chars
-                _ => (),
+                // Ignore whitespace
+                ' ' | '\n' => (),
+                _ => panic!("Invalid character '{}' in expression", c),
             }
         }
 
