@@ -63,7 +63,7 @@ impl Expression {
                     propositions.push(ExpressionToken::Subexpression(Self::from(&subexpression)));
 
                     // Skip the subexpression for its parent's parsing
-                    input_chars.nth(subexpression.len() - 1);
+                    input_chars.nth(subexpression.len());
 
                     is_negated = false;
                 }
