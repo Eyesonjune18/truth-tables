@@ -1,24 +1,24 @@
 Expression {
-    propositions: [
+    elements: [
         ExpressionElement {
             element: Subexpression(
                 Expression {
-                    propositions: [
+                    elements: [
                         ExpressionElement {
                             element: Proposition(
-                                'A',
+                                'a',
                             ),
                             negation: false,
                         },
                         ExpressionElement {
                             element: Proposition(
-                                'B',
+                                'b',
                             ),
                             negation: false,
                         },
                         ExpressionElement {
                             element: Proposition(
-                                'C',
+                                'c',
                             ),
                             negation: true,
                         },
@@ -27,6 +27,11 @@ Expression {
                         And,
                         And,
                     ],
+                    propositions: [
+                        'a',
+                        'b',
+                        'c',
+                    ],
                 },
             ),
             negation: false,
@@ -34,38 +39,42 @@ Expression {
         ExpressionElement {
             element: Subexpression(
                 Expression {
-                    propositions: [
+                    elements: [
                         ExpressionElement {
                             element: Proposition(
-                                'A',
+                                'a',
                             ),
                             negation: false,
                         },
                         ExpressionElement {
                             element: Proposition(
-                                'B',
+                                'b',
                             ),
                             negation: false,
                         },
                         ExpressionElement {
                             element: Subexpression(
                                 Expression {
-                                    propositions: [
+                                    elements: [
                                         ExpressionElement {
                                             element: Proposition(
-                                                'C',
+                                                'c',
                                             ),
                                             negation: true,
                                         },
                                         ExpressionElement {
                                             element: Proposition(
-                                                'A',
+                                                'a',
                                             ),
                                             negation: false,
                                         },
                                     ],
                                     operators: [
                                         Or,
+                                    ],
+                                    propositions: [
+                                        'c',
+                                        'a',
                                     ],
                                 },
                             ),
@@ -76,6 +85,11 @@ Expression {
                         And,
                         Or,
                     ],
+                    propositions: [
+                        'a',
+                        'b',
+                        'c',
+                    ],
                 },
             ),
             negation: false,
@@ -83,22 +97,26 @@ Expression {
         ExpressionElement {
             element: Subexpression(
                 Expression {
-                    propositions: [
+                    elements: [
                         ExpressionElement {
                             element: Proposition(
-                                'A',
+                                'a',
                             ),
                             negation: false,
                         },
                         ExpressionElement {
                             element: Proposition(
-                                'B',
+                                'b',
                             ),
                             negation: false,
                         },
                     ],
                     operators: [
                         Or,
+                    ],
+                    propositions: [
+                        'a',
+                        'b',
                     ],
                 },
             ),
@@ -108,5 +126,10 @@ Expression {
     operators: [
         Or,
         And,
+    ],
+    propositions: [
+        'a',
+        'b',
+        'c',
     ],
 }

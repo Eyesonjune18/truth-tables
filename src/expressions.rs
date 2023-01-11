@@ -58,8 +58,7 @@ impl Expression {
             match c {
                 // If the proposition character is within the allowed values (based on the assignment instructions)
                 'A'..='D' | 'a'..='d' => {
-                    elements.push(ExpressionElement::new(Proposition(c), is_negated));
-
+                    elements.push(ExpressionElement::new(Proposition(c.to_ascii_lowercase()), is_negated));
                     is_negated = false;
                 }
                 // If a subexpression is encountered
@@ -138,10 +137,12 @@ fn get_unique_propositions(expression: &str) -> Vec<char> {
     let mut propositions: Vec<char> = Vec::new();
 
     for c in expression.chars() {
+        let c = c.to_ascii_lowercase();
+
         match c {
             'A'..='D' | 'a'..='d' => {
                 if !propositions.contains(&c) {
-                    propositions.push(c.to_ascii_lowercase());
+                    propositions.push(c);
                 }
             }
             _ => (),
@@ -168,8 +169,8 @@ mod tests {
             match proposition.element {
                 PropositionToken::Proposition(p) => {
                     match proposition_num {
-                        0 => assert_eq!(p, 'A'),
-                        1 => assert_eq!(p, 'B'),
+                        0 => assert_eq!(p, 'a'),
+                        1 => assert_eq!(p, 'b'),
                         _ => assert!(false),
                     }
 

@@ -1,8 +1,9 @@
 #![allow(dead_code)]
 
 pub mod expressions;
-
 pub use expressions::Expression;
+
+use std::ops::Range;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -14,7 +15,6 @@ fn main() {
     Expression::parse(&args[1]);
 }
 
-use std::ops::Range;
 
 // Gets all possible permutations of a given number of bits
 fn get_bit_permutations(bits: u8) -> Range<u8> {
