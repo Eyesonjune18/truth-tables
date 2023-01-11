@@ -1,8 +1,10 @@
 // Represents a logical expression, which is a recursive tree of propositions/subexpressions and operators
+// Unique propositions are stored in order to later evaluate the expression properly
 #[derive(Debug)]
 pub struct Expression {
-    propositions: Vec<ExpressionElement>,
+    elements: Vec<ExpressionElement>,
     operators: Vec<Operator>,
+    propositions: Vec<char>,
 }
 
 // Represents a proposition or a subexpression, and whether it is negated or not
@@ -33,19 +35,20 @@ impl ExpressionElement {
 }
 
 impl Expression {
-    fn new(propositions: Vec<ExpressionElement>, operators: Vec<Operator>) -> Self {
+    fn new(elements: Vec<ExpressionElement>, operators: Vec<Operator>, propositions: Vec<char>) -> Self {
         Self {
-            propositions,
+            elements,
             operators,
+            propositions,
         }
     }
 
     // Recursively parses an Expression from a string
-    pub fn parse(string: &str) -> Expression {
-        let mut propositions: Vec<ExpressionElement> = Vec::new();
+    pub fn parse(expression_string: &str) -> Expression {
+        let mut elements: Vec<ExpressionElement> = Vec::new();
         let mut operators: Vec<Operator> = Vec::new();
 
-        let mut input_chars = string.char_indices();
+        let mut input_chars = expression_string.char_indices();
         let mut is_negated = false;
 
         use PropositionToken::*;
@@ -55,14 +58,15 @@ impl Expression {
             match c {
                 // If the proposition character is within the allowed values (based on the assignment instructions)
                 'A'..='D' | 'a'..='d' => {
-                    propositions.push(ExpressionElement::new(Proposition(c), is_negated));
+                    elements.push(ExpressionElement::new(Proposition(c), is_negated));
+
                     is_negated = false;
                 }
                 // If a subexpression is encountered
                 '(' => {
                     // Get the current subexpression and recursively parse it
-                    let subexpression = get_subexpression(&string[i..]);
-                    propositions.push(ExpressionElement::new(
+                    let subexpression = get_subexpression(&expression_string[i..]);
+                    elements.push(ExpressionElement::new(
                         Subexpression(Self::parse(&subexpression)),
                         is_negated,
                     ));
@@ -85,12 +89,17 @@ impl Expression {
             }
         }
 
-        // Ensure the correct number of propositions and operators
-        if propositions.len() != operators.len() + 1 {
+        // Ensure the correct number of elements and operators
+        if elements.len() != operators.len() + 1 {
             panic!("Mismatched proposition/operator count in expression");
         }
 
-        Self::new(propositions, operators)
+        Self::new(elements, operators, get_unique_propositions(expression_string))
+    }
+
+    // Evaluates a single permutation of propositions
+    pub fn evaluate_single(&self) -> bool {
+        todo!()
     }
 }
 
@@ -124,6 +133,24 @@ fn get_subexpression(expression: &str) -> String {
     subexpression
 }
 
+// Returns a list of all unique 
+fn get_unique_propositions(expression: &str) -> Vec<char> {
+    let mut propositions: Vec<char> = Vec::new();
+
+    for c in expression.chars() {
+        match c {
+            'A'..='D' | 'a'..='d' => {
+                if !propositions.contains(&c) {
+                    propositions.push(c.to_ascii_lowercase());
+                }
+            }
+            _ => (),
+        }
+    }
+
+    propositions
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -131,13 +158,13 @@ mod tests {
     #[test]
     fn test_expression_nonrecursive_parse() {
         let expression = Expression::parse("A & B");
-        assert_eq!(expression.propositions.len(), 2);
+        assert_eq!(expression.elements.len(), 2);
         assert_eq!(expression.operators.len(), 1);
         assert_eq!(expression.operators[0], Operator::And);
 
         let mut proposition_num = 0;
 
-        for proposition in &expression.propositions {
+        for proposition in &expression.elements {
             match proposition.element {
                 PropositionToken::Proposition(p) => {
                     match proposition_num {
