@@ -2,26 +2,6 @@
 
 pub mod tests;
 
-// Represents either a single source proposition, or another Expression called a subexpression
-#[derive(Debug)]
-enum ExpressionToken {
-    Proposition(Proposition),
-    Subexpression(Expression),
-}
-
-// Represents a single source proposition, which can be negated
-#[derive(Debug)]
-struct Proposition {
-    letter: char,
-    negation: bool,
-}
-
-impl Proposition {
-    fn new(letter: char, negation: bool) -> Self {
-        Self { letter, negation }
-    }
-}
-
 // Represents a logical operator
 #[derive(PartialEq, Debug)]
 enum Operator {
@@ -29,38 +9,67 @@ enum Operator {
     Or,
 }
 
+// Represents either a single source proposition, or another Expression called a subexpression
+#[derive(Debug)]
+enum PropositionToken {
+    Proposition(char),
+    Subexpression(Expression),
+}
+
+// Represents a proposition or a subexpression, and whether it is negated or not
+#[derive(Debug)]
+struct ExpressionElement {
+    element: PropositionToken,
+    negation: bool,
+}
+
+impl ExpressionElement {
+    fn new(element: PropositionToken, negation: bool) -> Self {
+        Self {
+            element,
+            negation,
+        }
+    }
+}
+
 // Represents a logical expression, which is a recursive tree of propositions/subexpressions and operators
 #[derive(Debug)]
 struct Expression {
-    propositions: Vec<ExpressionToken>,
+    propositions: Vec<ExpressionElement>,
     operators: Vec<Operator>,
 }
 
 impl Expression {
-    // Creates an Expression from a string
+    fn new(propositions: Vec<ExpressionElement>, operators: Vec<Operator>) -> Self {
+        Self {
+            propositions,
+            operators,
+        }
+    }
+
+    // Recursively parses an Expression from a string
     fn from(string: &str) -> Expression {
-        let mut propositions: Vec<ExpressionToken> = Vec::new();
+        let mut propositions: Vec<ExpressionElement> = Vec::new();
         let mut operators: Vec<Operator> = Vec::new();
 
         let mut input_chars = string.char_indices();
         let mut is_negated = false;
 
+        use PropositionToken::*;
+
         while let Some((i, c)) = input_chars.next() {
             // For each char in the expression
             match c {
                 // If the proposition character is within the allowed values (based on the assignment instructions)
-                'A'..='D' => {
-                    propositions.push(ExpressionToken::Proposition(Proposition::new(
-                        c, is_negated,
-                    )));
-
+                'A'..='D' | 'a'..='d' => {
+                    propositions.push(ExpressionElement::new(Proposition(c), is_negated));
                     is_negated = false;
                 }
                 // If a subexpression is encountered
                 '(' => {
                     // Get the current subexpression and recursively parse it
                     let subexpression = Self::get_subexpression(&string[i..]);
-                    propositions.push(ExpressionToken::Subexpression(Self::from(&subexpression)));
+                    propositions.push(ExpressionElement::new(Subexpression(Self::from(&subexpression)), is_negated));
 
                     // Skip the subexpression for its parent's parsing
                     input_chars.nth(subexpression.len());
@@ -68,13 +77,13 @@ impl Expression {
                     is_negated = false;
                 }
                 // Queue a negation to add to the next ExpressionToken
-                '!' => {
+                '!' | '/' => {
                     is_negated = true;
                 }
-                '&' => {
+                '&' | '*' => {
                     operators.push(Operator::And);
                 }
-                '|' => {
+                '|' | '+' => {
                     operators.push(Operator::Or);
                 }
                 // TODO: Add input validation for garbage chars
@@ -131,5 +140,6 @@ fn main() {
     }
 
     let expression = Expression::from(&args[1]);
-    dbg!(expression);
+    
+    std::fs::write("src/test_files/expression_1.tree", format!("{:#?}", expression)).expect("Couldn't write to test tree file.");
 }

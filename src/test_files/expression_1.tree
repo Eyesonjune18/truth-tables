@@ -1,0 +1,112 @@
+Expression {
+    propositions: [
+        ExpressionElement {
+            element: Subexpression(
+                Expression {
+                    propositions: [
+                        ExpressionElement {
+                            element: Proposition(
+                                'A',
+                            ),
+                            negation: false,
+                        },
+                        ExpressionElement {
+                            element: Proposition(
+                                'B',
+                            ),
+                            negation: false,
+                        },
+                        ExpressionElement {
+                            element: Proposition(
+                                'C',
+                            ),
+                            negation: true,
+                        },
+                    ],
+                    operators: [
+                        And,
+                        And,
+                    ],
+                },
+            ),
+            negation: false,
+        },
+        ExpressionElement {
+            element: Subexpression(
+                Expression {
+                    propositions: [
+                        ExpressionElement {
+                            element: Proposition(
+                                'A',
+                            ),
+                            negation: false,
+                        },
+                        ExpressionElement {
+                            element: Proposition(
+                                'B',
+                            ),
+                            negation: false,
+                        },
+                        ExpressionElement {
+                            element: Subexpression(
+                                Expression {
+                                    propositions: [
+                                        ExpressionElement {
+                                            element: Proposition(
+                                                'C',
+                                            ),
+                                            negation: true,
+                                        },
+                                        ExpressionElement {
+                                            element: Proposition(
+                                                'A',
+                                            ),
+                                            negation: false,
+                                        },
+                                    ],
+                                    operators: [
+                                        Or,
+                                    ],
+                                },
+                            ),
+                            negation: false,
+                        },
+                    ],
+                    operators: [
+                        And,
+                        Or,
+                    ],
+                },
+            ),
+            negation: false,
+        },
+        ExpressionElement {
+            element: Subexpression(
+                Expression {
+                    propositions: [
+                        ExpressionElement {
+                            element: Proposition(
+                                'A',
+                            ),
+                            negation: false,
+                        },
+                        ExpressionElement {
+                            element: Proposition(
+                                'B',
+                            ),
+                            negation: false,
+                        },
+                    ],
+                    operators: [
+                        Or,
+                    ],
+                },
+            ),
+            negation: false,
+        },
+    ],
+    operators: [
+        Or,
+        And,
+    ],
+}

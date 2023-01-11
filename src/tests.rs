@@ -1,5 +1,4 @@
 #![cfg(test)]
-use crate::ExpressionToken;
 
 use super::*;
 
@@ -13,29 +12,29 @@ fn test_expression_nonrecursive_parse() {
     let mut proposition_num = 0;
 
     for proposition in &expression.propositions {
-        match proposition {
-            ExpressionToken::Proposition(p) => {
+        match proposition.element {
+            PropositionToken::Proposition(p) => {
                 match proposition_num {
-                    0 => {
-                        assert_eq!(p.letter, 'A');
-                        assert_eq!(p.negation, false);
-                    }
-                    1 => {
-                        assert_eq!(p.letter, 'B');
-                        assert_eq!(p.negation, false);
-                    }
-                    _ => {
-                        assert!(false);
-                    }
+                    0 => assert_eq!(p, 'A'),
+                    1 => assert_eq!(p, 'B'),
+                    _ => assert!(false),
                 }
+
+                assert_eq!(proposition.negation, false);
             }
-            ExpressionToken::Subexpression(_) => {
+            PropositionToken::Subexpression(_) => {
                 assert!(false);
             }
         }
 
         proposition_num += 1;
     }
+}
+
+#[test]
+fn test_expression_recursive_parse() {
+    let expression = Expression::from("(A & B & !C) | (A & B | (!C | A)) & (A | B)");
+    assert_eq!(include_str!("test_files/expression_1.tree").trim_end(), format!("{:#?}", expression));
 }
 
 #[test]
