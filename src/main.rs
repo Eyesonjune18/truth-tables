@@ -15,7 +15,6 @@ fn main() {
     Expression::parse(&args[1]);
 }
 
-
 // Gets all possible permutations of a given number of bits
 fn get_bit_permutations(bits: u8) -> Range<u8> {
     0..(1 << bits)
