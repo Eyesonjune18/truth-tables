@@ -11,5 +11,5 @@ fn main() {
         panic!("Usage: {} <expression>", args[0]);
     }
 
-    Expression::from(&args[1]);
+    Expression::parse(&args[1]);
 }

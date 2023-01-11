@@ -44,7 +44,7 @@ impl Expression {
     }
 
     // Recursively parses an Expression from a string
-    pub fn from(string: &str) -> Expression {
+    pub fn parse(string: &str) -> Expression {
         let mut propositions: Vec<ExpressionElement> = Vec::new();
         let mut operators: Vec<Operator> = Vec::new();
 
@@ -65,7 +65,7 @@ impl Expression {
                 '(' => {
                     // Get the current subexpression and recursively parse it
                     let subexpression = get_subexpression(&string[i..]);
-                    propositions.push(ExpressionElement::new(Subexpression(Self::from(&subexpression)), is_negated));
+                    propositions.push(ExpressionElement::new(Subexpression(Self::parse(&subexpression)), is_negated));
 
                     // Skip the subexpression for its parent's parsing
                     input_chars.nth(subexpression.len());
@@ -91,10 +91,7 @@ impl Expression {
             panic!("Mismatched proposition/operator count in expression");
         }
 
-        Self {
-            propositions,
-            operators,
-        }
+        Self::new(propositions, operators)
     }
 }
 
@@ -134,7 +131,7 @@ mod tests {
 
     #[test]
     fn test_expression_nonrecursive_parse() {
-        let expression = Expression::from("A & B");
+        let expression = Expression::parse("A & B");
         assert_eq!(expression.propositions.len(), 2);
         assert_eq!(expression.operators.len(), 1);
         assert_eq!(expression.operators[0], Operator::And);
@@ -163,13 +160,13 @@ mod tests {
 
     #[test]
     fn test_expression_recursive_parse_1() {
-        let expression = Expression::from("(A & B & !C) | (A & B | (!C | A)) & (A | B)");
+        let expression = Expression::parse("(A & B & !C) | (A & B | (!C | A)) & (A | B)");
         assert_eq!(include_str!("test_files/expression_1.tree").trim_end(), format!("{:#?}", expression));
     }
 
     #[test]
     fn test_expression_recursive_parse_2() {
-        let expression = Expression::from("!(A & B) | ((A | !C | !D) & A) & B & C");
+        let expression = Expression::parse("!(A & B) | ((A | !C | !D) & A) & B & C");
         assert_eq!(include_str!("test_files/expression_2.tree").trim_end(), format!("{:#?}", expression));
     }
 
