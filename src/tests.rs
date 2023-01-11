@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 use super::*;
+use expressions::*;
 
 #[test]
 fn test_expression_nonrecursive_parse() {
@@ -46,17 +47,17 @@ fn test_expression_recursive_parse_2() {
 #[test]
 fn test_get_subexpression_nested_single() {
     let expression = "((A | B) & C)";
-    assert_eq!(Expression::get_subexpression(expression), "(A | B) & C");
+    assert_eq!(get_subexpression(expression), "(A | B) & C");
 }
 
 #[test]
 fn test_get_subexpression_nested_multi() {
     let expression = "((A | B) & C) & (D & C & A)";
-    assert_eq!(Expression::get_subexpression(expression), "(A | B) & C");
+    assert_eq!(get_subexpression(expression), "(A | B) & C");
 }
 
 #[test]
 fn test_get_subexpression() {
     let expression = "(A | B & C)";
-    assert_eq!(Expression::get_subexpression(expression), "A | B & C");
+    assert_eq!(get_subexpression(expression), "A | B & C");
 }
