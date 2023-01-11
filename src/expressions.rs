@@ -21,10 +21,7 @@ struct ExpressionElement {
 
 impl ExpressionElement {
     fn new(element: PropositionToken, negation: bool) -> Self {
-        Self {
-            element,
-            negation,
-        }
+        Self { element, negation }
     }
 }
 
@@ -65,7 +62,10 @@ impl Expression {
                 '(' => {
                     // Get the current subexpression and recursively parse it
                     let subexpression = get_subexpression(&string[i..]);
-                    propositions.push(ExpressionElement::new(Subexpression(Self::parse(&subexpression)), is_negated));
+                    propositions.push(ExpressionElement::new(
+                        Subexpression(Self::parse(&subexpression)),
+                        is_negated,
+                    ));
 
                     // Skip the subexpression for its parent's parsing
                     input_chars.nth(subexpression.len());
@@ -75,21 +75,17 @@ impl Expression {
                 // If a subexpression is not properly skipped
                 ')' => panic!("Unmatched ')' in expression"),
                 // Queue a negation to add to the next ExpressionToken
-                '!' | '/' => {
-                    is_negated = true;
-                }
-                '&' | '*' => {
-                    operators.push(Operator::And);
-                }
-                '|' | '+' => {
-                    operators.push(Operator::Or);
-                }
+                '!' | '/' => is_negated = true,
+                '&' | '*' => operators.push(Operator::And),
+                '|' | '+' => operators.push(Operator::Or),
                 // Ignore whitespace
                 ' ' | '\n' => (),
+                // Panic on unknown characters
                 _ => panic!("Invalid character '{}' in expression", c),
             }
         }
 
+        // Ensure the correct number of propositions and operators
         if propositions.len() != operators.len() + 1 {
             panic!("Mismatched proposition/operator count in expression");
         }
@@ -164,13 +160,19 @@ mod tests {
     #[test]
     fn test_expression_recursive_parse_1() {
         let expression = Expression::parse("(A & B & !C) | (A & B | (!C | A)) & (A | B)");
-        assert_eq!(include_str!("test_files/expression_1.tree").trim_end(), format!("{:#?}", expression));
+        assert_eq!(
+            include_str!("test_files/expression_1.tree").trim_end(),
+            format!("{:#?}", expression)
+        );
     }
 
     #[test]
     fn test_expression_recursive_parse_2() {
         let expression = Expression::parse("!(A & B) | ((A | !C | !D) & A) & B & C");
-        assert_eq!(include_str!("test_files/expression_2.tree").trim_end(), format!("{:#?}", expression));
+        assert_eq!(
+            include_str!("test_files/expression_2.tree").trim_end(),
+            format!("{:#?}", expression)
+        );
     }
 
     #[test]
