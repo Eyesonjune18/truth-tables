@@ -45,9 +45,18 @@ impl PropositionTable {
 
     // Parses a string into a PropositionTable
     pub fn from(expression: &str) -> Self {
-        Self {
-            propositions: get_unique_propositions_unvalued(expression),
+        let mut propositions: HashMap<PropositionIdentifier, Option<bool>> = HashMap::new();
+
+        for c in expression.chars() {
+            match c {
+                'A'..='D' | 'a'..='d' => {
+                    propositions.insert(PropositionIdentifier::from(c), None);
+                }
+                _ => (),
+            }
         }
+
+        Self { propositions }
     }
 
     // Returns the value of a proposition in the table
@@ -84,25 +93,6 @@ impl PropositionTable {
             _ => false,
         }
     }
-}
-
-// Returns a table of all unique proposition identifiers
-// TODO: Rename this and probably move it somewhere else
-fn get_unique_propositions_unvalued(
-    expression: &str,
-) -> HashMap<PropositionIdentifier, Option<bool>> {
-    let mut propositions: HashMap<PropositionIdentifier, Option<bool>> = HashMap::new();
-
-    for c in expression.chars() {
-        match c {
-            'A'..='D' | 'a'..='d' => {
-                propositions.insert(PropositionIdentifier::from(c), None);
-            }
-            _ => (),
-        }
-    }
-
-    propositions
 }
 
 #[cfg(test)]
