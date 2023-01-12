@@ -6,7 +6,8 @@ use std::collections::HashMap;
 pub struct Expression {
     elements: Vec<ExpressionElement>,
     operators: Vec<Operator>,
-    propositions: HashMap<PropositionIdentifier, Option<bool>>,
+    // TODO: Maybe make this its own struct
+    propositions: PropositionTable,
 }
 
 // Represents a proposition or a subexpression, and whether it is negated or not
@@ -39,6 +40,12 @@ enum PropositionIdentifier {
     D,
 }
 
+// Stores a table of all the proposition identifiers, and their respective values
+#[derive(Debug)]
+struct PropositionTable {
+    propositions: HashMap<PropositionIdentifier, Option<bool>>,
+}
+
 impl ExpressionElement {
     fn new(element: PropositionToken, negation: bool) -> Self {
         Self { element, negation }
@@ -56,7 +63,6 @@ impl ExpressionElement {
 
 impl PropositionIdentifier {
     // Returns the masked value of the proposition for a given permutation of propositions
-    // TODO: How to handle missing propositions?
     fn mask(&self, permutation: u8) -> bool {
         match self {
             Self::A => permutation & 0b0001 != 0,
@@ -78,8 +84,33 @@ impl PropositionIdentifier {
     }
 }
 
+impl PropositionTable {
+    fn new(propositions: HashMap<PropositionIdentifier, Option<bool>>) -> Self {
+        Self { propositions }
+    }
+
+    // Parses a string into a PropositionTable
+    fn from(expression: &str) -> Self {
+        Self { propositions: get_unique_propositions_unvalued(expression) }
+    }
+
+    // Ensures that there are no skipped identifiers
+    // This is a really ugly way to do this and it's not very scalable, but it should do fine for this assignment
+    fn validate(&self) -> bool {
+        let proposition_count = self.propositions.len();
+
+        match proposition_count {
+            1 => self.propositions.contains_key(&PropositionIdentifier::A),
+            2 => self.propositions.contains_key(&PropositionIdentifier::A) && self.propositions.contains_key(&PropositionIdentifier::B),
+            3 => self.propositions.contains_key(&PropositionIdentifier::A) && self.propositions.contains_key(&PropositionIdentifier::B) && self.propositions.contains_key(&PropositionIdentifier::C),
+            4 => self.propositions.contains_key(&PropositionIdentifier::A) && self.propositions.contains_key(&PropositionIdentifier::B) && self.propositions.contains_key(&PropositionIdentifier::C) && self.propositions.contains_key(&PropositionIdentifier::D),
+            _ => false,
+        }
+    }
+}
+
 impl Expression {
-    fn new(elements: Vec<ExpressionElement>, operators: Vec<Operator>, propositions: HashMap<PropositionIdentifier, Option<bool>>) -> Self {
+    fn new(elements: Vec<ExpressionElement>, operators: Vec<Operator>, propositions: PropositionTable) -> Self {
         Self {
             elements,
             operators,
@@ -88,9 +119,15 @@ impl Expression {
     }
 
     // Recursively parses an Expression from a string
-    pub fn parse(expression_string: &str) -> Expression {
+    pub fn parse(expression_string: &str, validate_propositions: bool) -> Expression {
         let mut elements: Vec<ExpressionElement> = Vec::new();
         let mut operators: Vec<Operator> = Vec::new();
+        let propositions = PropositionTable::from(expression_string);
+
+        // Make sure that the expression does not skip propositions such as in (A, B, D) or (C, D)
+        if validate_propositions && !propositions.validate() {
+            panic!("Expression does not contain purely consecutive proposition identifiers");
+        }
 
         let mut input_chars = expression_string.char_indices();
         let mut is_negated = false;
@@ -110,7 +147,7 @@ impl Expression {
                     // Get the current subexpression and recursively parse it
                     let subexpression = get_subexpression(&expression_string[i..]);
                     elements.push(ExpressionElement::new(
-                        Subexpression(Self::parse(&subexpression)),
+                        Subexpression(Self::parse(&subexpression, false)),
                         is_negated,
                     ));
 
@@ -137,7 +174,7 @@ impl Expression {
             panic!("Mismatched proposition/operator count in expression");
         }
 
-        Self::new(elements, operators, get_unique_propositions_unvalued(expression_string))
+        Self::new(elements, operators, propositions )
     }
 
     // Evaluates a single permutation of propositions
@@ -198,7 +235,7 @@ mod tests {
 
     #[test]
     fn test_expression_nonrecursive_parse() {
-        let expression = Expression::parse("A & B");
+        let expression = Expression::parse("A & B", true);
         assert_eq!(expression.elements.len(), 2);
         assert_eq!(expression.operators.len(), 1);
         assert_eq!(expression.operators[0], Operator::And);
@@ -241,5 +278,26 @@ mod tests {
     fn test_get_subexpression() {
         let expression = "(A | B & C)";
         assert_eq!(get_subexpression(expression), "A | B & C");
+    }
+
+    #[test]
+    fn test_validate_propositions() {
+        let expression = "A";
+        assert!(PropositionTable::from(expression).validate());
+
+        let expression = "A & B";
+        assert!(PropositionTable::from(expression).validate());
+
+        let expression = "A & B & C";
+        assert!(PropositionTable::from(expression).validate());
+
+        let expression = "A & B & C & D";
+        assert!(PropositionTable::from(expression).validate());
+
+        let expression = "A & C & D";
+        assert!(!PropositionTable::from(expression).validate());
+
+        let expression = "B & C";
+        assert!(!PropositionTable::from(expression).validate());
     }
 }

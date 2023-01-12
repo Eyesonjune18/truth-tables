@@ -12,7 +12,7 @@ fn main() {
         panic!("Usage: {} <expression>", args[0]);
     }
 
-    Expression::parse(&args[1]);
+    Expression::parse(&args[1], true);
 }
 
 // Gets all possible permutations of a given number of bits
