@@ -13,7 +13,7 @@ pub struct Expression {
 // Represents a proposition or a subexpression, and whether it is negated or not
 #[derive(Debug)]
 struct ExpressionElement {
-    element: ExpressionElementToken,
+    token: ExpressionElementToken,
     negation: bool,
 }
 
@@ -33,14 +33,14 @@ enum Operator {
 
 impl ExpressionElement {
     fn new(element: ExpressionElementToken, negation: bool) -> Self {
-        Self { element, negation }
+        Self { token: element, negation }
     }
 
     // Converts a char to a proposition ExpressionElement
     // TODO: Add range checking here? Probably not necessary
     fn from_proposition(proposition_letter: char, negation: bool) -> Self {
         Self {
-            element: ExpressionElementToken::Proposition(PropositionIdentifier::from(
+            token: ExpressionElementToken::Proposition(PropositionIdentifier::from(
                 proposition_letter,
             )),
             negation,
@@ -120,6 +120,20 @@ impl Expression {
         Self::new(elements, operators, propositions)
     }
 
+    // Recursively sets the values of all propositions in the expression and its subexpressions
+    pub fn set_values(&mut self, values: u8) {
+        // Set the proposition values in the current expression
+        self.propositions.set_all(values);
+
+        // Set the proposition values in all subexpressions recursively
+        for element in &mut self.elements {
+            match &mut element.token {
+                ExpressionElementToken::Subexpression(e) => e.set_values(values),
+                ExpressionElementToken::Proposition(_) => (),
+            }
+        }
+    }
+
     // Evaluates a single permutation of propositions
     pub fn evaluate_single(&self) -> bool {
         todo!()
@@ -170,7 +184,7 @@ mod tests {
         let mut proposition_num = 0;
 
         for proposition in &expression.elements {
-            match &proposition.element {
+            match &proposition.token {
                 ExpressionElementToken::Proposition(p) => {
                     match proposition_num {
                         0 => assert_eq!(p, &PropositionIdentifier::A),

@@ -15,10 +15,13 @@ fn main() {
         panic!("Usage: {} <expression>", args[0]);
     }
 
-    Expression::parse(&args[1], true);
+    let mut expression = Expression::parse(&args[1], true);
+    expression.set_values(0b0101);
+
+    dbg!(expression);
 }
 
-// Gets all possible permutations of a given number of bits
+// Gets a range of numbers with all possible permutations of a given number of bits
 fn get_bit_permutations(bits: u8) -> Range<u8> {
     0..(1 << bits)
 }
