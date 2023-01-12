@@ -50,6 +50,18 @@ impl PropositionTable {
         }
     }
 
+    // Returns the value of a proposition in the table
+    pub fn get(&self, identifier: &PropositionIdentifier) -> Option<bool> {
+        self.propositions.get(identifier).copied().flatten()
+    }
+
+    // Sets the true/false values of all the propositions in the table by bitmasking a provided u8 (0b0000ABCD)
+    pub fn set_all(&mut self, values: u8) {
+        for (proposition, value) in self.propositions.iter_mut() {
+            *value = Some(proposition.mask(values));
+        }
+    }
+
     // Ensures that there are no skipped identifiers
     // This is a really ugly way to do this and it's not very scalable, but it should do fine for this assignment
     pub fn validate(&self) -> bool {
@@ -116,5 +128,34 @@ mod tests {
 
         let expression = "B & C";
         assert!(!PropositionTable::from(expression).validate());
+    }
+
+    #[test]
+    fn test_set_values() {
+        let expression = "A & B & C & D";
+        let mut table = PropositionTable::from(expression);
+
+        use PropositionIdentifier::*;
+
+        table.set_all(0b0000);
+
+        assert_eq!(table.get(&A), Some(false));
+        assert_eq!(table.get(&B), Some(false));
+        assert_eq!(table.get(&C), Some(false));
+        assert_eq!(table.get(&D), Some(false));
+
+        table.set_all(0b1111);
+
+        assert_eq!(table.get(&A), Some(true));
+        assert_eq!(table.get(&B), Some(true));
+        assert_eq!(table.get(&C), Some(true));
+        assert_eq!(table.get(&D), Some(true));
+
+        table.set_all(0b1010);
+
+        assert_eq!(table.get(&A), Some(false));
+        assert_eq!(table.get(&B), Some(true));
+        assert_eq!(table.get(&C), Some(false));
+        assert_eq!(table.get(&D), Some(true));
     }
 }
