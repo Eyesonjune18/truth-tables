@@ -19,10 +19,10 @@ impl PropositionIdentifier {
     // Returns the masked value of the proposition for a given permutation of propositions
     fn mask(&self, permutation: u8) -> bool {
         match self {
-            Self::A => permutation & 0b0001 != 0,
-            Self::B => permutation & 0b0010 != 0,
-            Self::C => permutation & 0b0100 != 0,
-            Self::D => permutation & 0b1000 != 0,
+            Self::A => permutation & 0b1000 != 0,
+            Self::B => permutation & 0b0100 != 0,
+            Self::C => permutation & 0b0010 != 0,
+            Self::D => permutation & 0b0001 != 0,
         }
     }
 
@@ -153,9 +153,9 @@ mod tests {
 
         table.set_all(0b1010);
 
-        assert_eq!(table.get(&A), Some(false));
-        assert_eq!(table.get(&B), Some(true));
-        assert_eq!(table.get(&C), Some(false));
-        assert_eq!(table.get(&D), Some(true));
+        assert_eq!(table.get(&A), Some(true));
+        assert_eq!(table.get(&B), Some(false));
+        assert_eq!(table.get(&C), Some(true));
+        assert_eq!(table.get(&D), Some(false));
     }
 }
