@@ -1,7 +1,10 @@
 #![allow(dead_code)]
 
-pub mod expressions;
+mod expressions;
+mod propositions;
 pub use expressions::Expression;
+pub use propositions::PropositionIdentifier;
+pub use propositions::PropositionTable;
 
 use std::ops::Range;
 
@@ -28,7 +31,13 @@ mod tests {
     fn test_get_bit_permutations() {
         assert_eq!(get_bit_permutations(0).collect::<Vec<u8>>(), vec![0]);
         assert_eq!(get_bit_permutations(1).collect::<Vec<u8>>(), vec![0, 1]);
-        assert_eq!(get_bit_permutations(2).collect::<Vec<u8>>(), vec![0, 1, 2, 3]);
-        assert_eq!(get_bit_permutations(3).collect::<Vec<u8>>(), vec![0, 1, 2, 3, 4, 5, 6, 7]);
+        assert_eq!(
+            get_bit_permutations(2).collect::<Vec<u8>>(),
+            vec![0, 1, 2, 3]
+        );
+        assert_eq!(
+            get_bit_permutations(3).collect::<Vec<u8>>(),
+            vec![0, 1, 2, 3, 4, 5, 6, 7]
+        );
     }
 }
