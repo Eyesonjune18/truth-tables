@@ -39,12 +39,7 @@ impl ExpressionElement {
     // Converts a char to a proposition ExpressionElement
     // TODO: Add range checking here? Probably not necessary
     fn from_proposition(proposition_letter: char, negation: bool) -> Self {
-        Self {
-            token: ExpressionElementToken::Proposition(PropositionIdentifier::from(
-                proposition_letter,
-            )),
-            negation,
-        }
+        Self::new(ExpressionElementToken::Proposition(PropositionIdentifier::from(proposition_letter)), negation)
     }
 }
 

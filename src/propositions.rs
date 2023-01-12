@@ -56,7 +56,7 @@ impl PropositionTable {
             }
         }
 
-        Self { propositions }
+        Self::new(propositions)
     }
 
     // Returns the value of a proposition in the table
