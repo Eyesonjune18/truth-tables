@@ -60,7 +60,7 @@ impl PropositionTable {
     }
 
     // Returns the value of a proposition in the table
-    pub fn get(&self, identifier: &PropositionIdentifier) -> Option<bool> {
+    pub fn get_value(&self, identifier: &PropositionIdentifier) -> Option<bool> {
         self.propositions.get(identifier).copied().flatten()
     }
 
@@ -101,22 +101,22 @@ mod tests {
 
     #[test]
     fn test_validate_propositions() {
-        let expression = "A";
+        let mut expression = "A";
         assert!(PropositionTable::from(expression).validate());
 
-        let expression = "A & B";
+        expression = "A & B";
         assert!(PropositionTable::from(expression).validate());
 
-        let expression = "A & B & C";
+        expression = "A & B & C";
         assert!(PropositionTable::from(expression).validate());
 
-        let expression = "A & B & C & D";
+        expression = "A & B & C & D";
         assert!(PropositionTable::from(expression).validate());
 
-        let expression = "A & C & D";
+        expression = "A & C & D";
         assert!(!PropositionTable::from(expression).validate());
 
-        let expression = "B & C";
+        expression = "B & C";
         assert!(!PropositionTable::from(expression).validate());
     }
 
@@ -129,23 +129,23 @@ mod tests {
 
         table.set_all(0b0000);
 
-        assert_eq!(table.get(&A), Some(false));
-        assert_eq!(table.get(&B), Some(false));
-        assert_eq!(table.get(&C), Some(false));
-        assert_eq!(table.get(&D), Some(false));
+        assert_eq!(table.get_value(&A), Some(false));
+        assert_eq!(table.get_value(&B), Some(false));
+        assert_eq!(table.get_value(&C), Some(false));
+        assert_eq!(table.get_value(&D), Some(false));
 
         table.set_all(0b1111);
 
-        assert_eq!(table.get(&A), Some(true));
-        assert_eq!(table.get(&B), Some(true));
-        assert_eq!(table.get(&C), Some(true));
-        assert_eq!(table.get(&D), Some(true));
+        assert_eq!(table.get_value(&A), Some(true));
+        assert_eq!(table.get_value(&B), Some(true));
+        assert_eq!(table.get_value(&C), Some(true));
+        assert_eq!(table.get_value(&D), Some(true));
 
         table.set_all(0b1010);
 
-        assert_eq!(table.get(&A), Some(true));
-        assert_eq!(table.get(&B), Some(false));
-        assert_eq!(table.get(&C), Some(true));
-        assert_eq!(table.get(&D), Some(false));
+        assert_eq!(table.get_value(&A), Some(true));
+        assert_eq!(table.get_value(&B), Some(false));
+        assert_eq!(table.get_value(&C), Some(true));
+        assert_eq!(table.get_value(&D), Some(false));
     }
 }

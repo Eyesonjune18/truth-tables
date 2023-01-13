@@ -33,13 +33,19 @@ enum Operator {
 
 impl ExpressionElement {
     fn new(element: ExpressionElementToken, negation: bool) -> Self {
-        Self { token: element, negation }
+        Self {
+            token: element,
+            negation,
+        }
     }
 
     // Converts a char to a proposition ExpressionElement
     // TODO: Add range checking here? Probably not necessary
     fn from_proposition(proposition_letter: char, negation: bool) -> Self {
-        Self::new(ExpressionElementToken::Proposition(PropositionIdentifier::from(proposition_letter)), negation)
+        Self::new(
+            ExpressionElementToken::Proposition(PropositionIdentifier::from(proposition_letter)),
+            negation,
+        )
     }
 }
 
@@ -129,10 +135,48 @@ impl Expression {
         }
     }
 
-    // Evaluates a single permutation of propositions
-    pub fn evaluate_single(&self) -> bool {
-        todo!()
+    // Recursively evaluates an Expression based on its current table
+    // The table must be set before calling this function, or it will cause an error
+    fn evaluate_all(&self) -> bool {
+        // Evaluate the first element
+        let mut result = self.evaluate_element(&self.elements[0]);
+
+        // Evaluate the remaining elements and operators
+        for (i, operator) in self.operators.iter().enumerate() {
+            let element = &self.elements[i + 1];
+
+            match operator {
+                Operator::And => result &= self.evaluate_element(element),
+                Operator::Or => result |= self.evaluate_element(element),
+            }
+        }
+
+        result
     }
+
+    // Evaluates an ExpressionElement, which can be a proposition or a subexpression
+    // Subexpressions are evaluated recursively
+    fn evaluate_element(&self, element: &ExpressionElement) -> bool {
+        use ExpressionElementToken::*;
+
+        let mut result = match &element.token {
+            Proposition(p) => self.propositions.get_value(p).expect(
+                "[INTERNAL ERROR] Expression proposition values were not set before evaluation",
+            ),
+            Subexpression(s) => s.evaluate_all(),
+        };
+
+        if element.negation {
+            result = !result;
+        }
+
+        result
+    }
+
+    // // Evaluates a single permutation of propositions
+    // pub fn evaluate_single(&self) -> bool {
+    //     todo!()
+    // }
 }
 
 // Return the substring between the first pair of parentheses, excluding the parentheses themselves
@@ -170,7 +214,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_expression_nonrecursive_parse() {
+    fn test_parse_nonrecursive() {
         let expression = Expression::parse("A & B", true);
         assert_eq!(expression.elements.len(), 2);
         assert_eq!(expression.operators.len(), 1);
@@ -195,6 +239,56 @@ mod tests {
             }
 
             proposition_num += 1;
+        }
+    }
+
+    #[test]
+    fn test_evaluate_nonrecursive() {
+        let mut expression = Expression::parse("A & B", true);
+
+        expression.set_values(0b0000);
+        assert!(!expression.evaluate_all());
+
+        expression.set_values(0b0100);
+        assert!(!expression.evaluate_all());
+
+        expression.set_values(0b1000);
+        assert!(!expression.evaluate_all());
+
+        expression.set_values(0b1100);
+        assert!(expression.evaluate_all());
+
+        expression = Expression::parse("!A & !B", true);
+
+        expression.set_values(0b0000);
+        assert!(expression.evaluate_all());
+
+        expression.set_values(0b0100);
+        assert!(!expression.evaluate_all());
+
+        expression.set_values(0b1000);
+        assert!(!expression.evaluate_all());
+
+        expression.set_values(0b1100);
+        assert!(!expression.evaluate_all());
+    }
+
+    #[test]
+    fn test_evaluate_recursive() {
+        let mut expression = Expression::parse("(A & B) | (C & D)", true);
+
+        for i in 0..=15 {
+            expression.set_values(i);
+            assert_eq!(
+                expression.evaluate_all(),
+                i == 0b0011
+                    || i == 0b0111
+                    || i == 0b1011
+                    || i == 0b1100
+                    || i == 0b1101
+                    || i == 0b1110
+                    || i == 0b1111
+            );
         }
     }
 
