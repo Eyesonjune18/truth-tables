@@ -51,27 +51,36 @@ impl TruthTable {
 
     // TODO: Fix code, this is auto-generated
     pub fn print(&self) {
+        let mut num_dividers = 8;
+
         // Print the header
         for proposition in &self.propositions {
             print!("{} ", proposition.to_char());
+            num_dividers += 2;
         }
 
-        println!("Result");
+        println!("│ Result");
+
+        // Print the dividers
+        for i in 0..num_dividers {
+            if i == num_dividers - 8 {
+                print!("┼");
+            } else {
+                print!("─");
+            }
+        }
+
+        println!();
 
         // Print the values and results
         for (permutation, result) in &self.values_and_results {
             for i in 0..self.propositions.len() {
-                print!(
-                    "{} ",
-                    if permutation & (1 << i) != 0 {
-                        "T"
-                    } else {
-                        "F"
-                    }
-                );
+                // Mask out the appropriate bit and turn it into a 0 or a 1
+                let proposition_bit = (permutation & (1 << i)) >> i;
+                print!("{} ", proposition_bit);
             }
 
-            println!("{}", if *result { "T" } else { "F" });
+            println!("│      {}", if *result { "T" } else { "F" });
         }
 
         println!();
