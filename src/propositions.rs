@@ -19,21 +19,42 @@ impl PropositionIdentifier {
     // Returns the masked value of the proposition for a given permutation of propositions
     fn mask(&self, permutation: u8) -> bool {
         match self {
-            Self::A => permutation & 0b1000 != 0,
-            Self::B => permutation & 0b0100 != 0,
-            Self::C => permutation & 0b0010 != 0,
-            Self::D => permutation & 0b0001 != 0,
+            Self::A => permutation & 0b0001 != 0,
+            Self::B => permutation & 0b0010 != 0,
+            Self::C => permutation & 0b0100 != 0,
+            Self::D => permutation & 0b1000 != 0,
         }
     }
 
     // Converts a char to a PropositionIdentifier
-    pub fn from(c: char) -> Self {
+    pub fn from_char(c: char) -> Self {
         match c {
             'a' | 'A' => Self::A,
             'b' | 'B' => Self::B,
             'c' | 'C' => Self::C,
             'd' | 'D' => Self::D,
             _ => unreachable!("[INTERNAL ERROR] Invalid proposition character '{}'", c),
+        }
+    }
+
+    // Converts a u8 to a PropositionIdentifier
+    pub fn from_int(i: u8) -> Self {
+        match i {
+            0 => Self::A,
+            1 => Self::B,
+            2 => Self::C,
+            3 => Self::D,
+            _ => unreachable!("[INTERNAL ERROR] Invalid proposition integer '{}'", i),
+        }
+    }
+
+    // Converts a PropositionIdentifier to a char
+    pub fn to_char(&self) -> char {
+        match self {
+            Self::A => 'A',
+            Self::B => 'B',
+            Self::C => 'C',
+            Self::D => 'D',
         }
     }
 }
@@ -44,13 +65,13 @@ impl PropositionTable {
     }
 
     // Parses a string into a PropositionTable
-    pub fn from(expression: &str) -> Self {
+    pub fn from_str(expression: &str) -> Self {
         let mut propositions: HashMap<PropositionIdentifier, Option<bool>> = HashMap::new();
 
         for c in expression.chars() {
             match c {
                 'A'..='D' | 'a'..='d' => {
-                    propositions.insert(PropositionIdentifier::from(c), None);
+                    propositions.insert(PropositionIdentifier::from_char(c), None);
                 }
                 _ => (),
             }
@@ -64,11 +85,16 @@ impl PropositionTable {
         self.propositions.get(identifier).copied().flatten()
     }
 
-    // Sets the true/false values of all the propositions in the table by bitmasking a provided u8 (0b0000ABCD)
+    // Sets the true/false values of all the propositions in the table by bitmasking a provided u8 (0b0000DCBA)
     pub fn set_all(&mut self, values: u8) {
         for (proposition, value) in self.propositions.iter_mut() {
             *value = Some(proposition.mask(values));
         }
+    }
+
+    // Returns the number of propositions in the table
+    pub fn count(&self) -> u8 {
+        self.propositions.len() as u8
     }
 
     // Ensures that there are no skipped identifiers
@@ -102,28 +128,28 @@ mod tests {
     #[test]
     fn test_validate_propositions() {
         let mut expression = "A";
-        assert!(PropositionTable::from(expression).validate());
+        assert!(PropositionTable::from_str(expression).validate());
 
         expression = "A & B";
-        assert!(PropositionTable::from(expression).validate());
+        assert!(PropositionTable::from_str(expression).validate());
 
         expression = "A & B & C";
-        assert!(PropositionTable::from(expression).validate());
+        assert!(PropositionTable::from_str(expression).validate());
 
         expression = "A & B & C & D";
-        assert!(PropositionTable::from(expression).validate());
+        assert!(PropositionTable::from_str(expression).validate());
 
         expression = "A & C & D";
-        assert!(!PropositionTable::from(expression).validate());
+        assert!(!PropositionTable::from_str(expression).validate());
 
         expression = "B & C";
-        assert!(!PropositionTable::from(expression).validate());
+        assert!(!PropositionTable::from_str(expression).validate());
     }
 
     #[test]
     fn test_set_values() {
         let expression = "A & B & C & D";
-        let mut table = PropositionTable::from(expression);
+        let mut table = PropositionTable::from_str(expression);
 
         use PropositionIdentifier::*;
 
@@ -141,7 +167,7 @@ mod tests {
         assert_eq!(table.get_value(&C), Some(true));
         assert_eq!(table.get_value(&D), Some(true));
 
-        table.set_all(0b1010);
+        table.set_all(0b0101);
 
         assert_eq!(table.get_value(&A), Some(true));
         assert_eq!(table.get_value(&B), Some(false));
