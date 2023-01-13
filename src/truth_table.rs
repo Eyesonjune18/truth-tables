@@ -44,7 +44,7 @@ impl TruthTable {
         Self::new(propositions, values_and_results)
     }
 
-    // TODO: Fix code, this is auto-generated
+    // TODO: Sort permutations, HashMap does not do this by default
     pub fn print(&self) {
         let mut num_dividers = 8;
 
