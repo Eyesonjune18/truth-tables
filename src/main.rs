@@ -12,7 +12,10 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
 
     if args.len() != 3 {
-        println!("Usage: {} [-e | --expression] [-t | --truth-table] <input>", args[0]);
+        println!(
+            "Usage: {} [-e | --expression] [-t | --truth-table] <input>",
+            args[0]
+        );
         println!("Note: The flag you choose determines the input type, not the output type");
         std::process::exit(1);
     }
