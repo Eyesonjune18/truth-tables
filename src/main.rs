@@ -1,5 +1,3 @@
-// #![allow(dead_code)]
-
 mod expressions;
 mod propositions;
 pub use expressions::Expression;

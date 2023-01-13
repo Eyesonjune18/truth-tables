@@ -125,19 +125,21 @@ impl Expression {
     pub fn set_values(&mut self, values: u8) {
         // Set the proposition values in the current expression
         self.propositions.set_all(values);
+        
+        use ExpressionElementToken::*;
 
         // Set the proposition values in all subexpressions recursively
         for element in &mut self.elements {
             match &mut element.token {
-                ExpressionElementToken::Subexpression(e) => e.set_values(values),
-                ExpressionElementToken::Proposition(_) => (),
+                Subexpression(e) => e.set_values(values),
+                Proposition(_) => (),
             }
         }
     }
 
-    // Recursively evaluates an Expression based on its current table
+    // Recursively evaluates the expression based on its current table
     // The table must be set before calling this function, or it will cause an error
-    fn evaluate_all(&self) -> bool {
+    fn evaluate(&self) -> bool {
         // Evaluate the first element
         let mut result = self.evaluate_element(&self.elements[0]);
 
@@ -163,7 +165,7 @@ impl Expression {
             Proposition(p) => self.propositions.get_value(p).expect(
                 "[INTERNAL ERROR] Expression proposition values were not set before evaluation",
             ),
-            Subexpression(s) => s.evaluate_all(),
+            Subexpression(s) => s.evaluate(),
         };
 
         if element.negation {
@@ -172,6 +174,11 @@ impl Expression {
 
         result
     }
+
+    // // Evaluates all permutations of the expression and returns the result
+    // pub fn evaluate_all_permutations() -> Vec<bool> {
+    //     todo!()
+    // }
 
     // // Evaluates a single permutation of propositions
     // pub fn evaluate_single(&self) -> bool {
@@ -247,30 +254,30 @@ mod tests {
         let mut expression = Expression::parse("A & B", true);
 
         expression.set_values(0b0000);
-        assert!(!expression.evaluate_all());
+        assert!(!expression.evaluate());
 
         expression.set_values(0b0100);
-        assert!(!expression.evaluate_all());
+        assert!(!expression.evaluate());
 
         expression.set_values(0b1000);
-        assert!(!expression.evaluate_all());
+        assert!(!expression.evaluate());
 
         expression.set_values(0b1100);
-        assert!(expression.evaluate_all());
+        assert!(expression.evaluate());
 
         expression = Expression::parse("!A & !B", true);
 
         expression.set_values(0b0000);
-        assert!(expression.evaluate_all());
+        assert!(expression.evaluate());
 
         expression.set_values(0b0100);
-        assert!(!expression.evaluate_all());
+        assert!(!expression.evaluate());
 
         expression.set_values(0b1000);
-        assert!(!expression.evaluate_all());
+        assert!(!expression.evaluate());
 
         expression.set_values(0b1100);
-        assert!(!expression.evaluate_all());
+        assert!(!expression.evaluate());
     }
 
     #[test]
@@ -280,7 +287,7 @@ mod tests {
         for i in 0..=15 {
             expression.set_values(i);
             assert_eq!(
-                expression.evaluate_all(),
+                expression.evaluate(),
                 i == 0b0011
                     || i == 0b0111
                     || i == 0b1011
