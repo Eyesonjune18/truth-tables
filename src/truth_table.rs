@@ -1,8 +1,8 @@
-use std::ops::Range;
 use std::collections::HashMap;
+use std::ops::Range;
 
-use crate::PropositionIdentifier;
 use crate::Expression;
+use crate::PropositionIdentifier;
 
 // Represents a truth table for a given expression
 // Proposition value permutations are encoded in u8s
@@ -15,7 +15,11 @@ pub struct TruthTable {
 }
 
 impl TruthTable {
-    fn new(expression: Expression, propositions: Vec<PropositionIdentifier>, values_and_results: HashMap<u8, bool>) -> Self {
+    fn new(
+        expression: Expression,
+        propositions: Vec<PropositionIdentifier>,
+        values_and_results: HashMap<u8, bool>,
+    ) -> Self {
         Self {
             expression,
             propositions,
@@ -57,7 +61,14 @@ impl TruthTable {
         // Print the values and results
         for (permutation, result) in &self.values_and_results {
             for i in 0..self.propositions.len() {
-                print!("{} ", if permutation & (1 << i) != 0 { "T" } else { "F" });
+                print!(
+                    "{} ",
+                    if permutation & (1 << i) != 0 {
+                        "T"
+                    } else {
+                        "F"
+                    }
+                );
             }
 
             println!("{}", if *result { "T" } else { "F" });

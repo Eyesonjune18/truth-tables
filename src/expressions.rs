@@ -43,7 +43,9 @@ impl ExpressionElement {
     // TODO: Add range checking here? Probably not necessary
     fn from_proposition(proposition_letter: char, negation: bool) -> Self {
         Self::new(
-            ExpressionElementToken::Proposition(PropositionIdentifier::from_char(proposition_letter)),
+            ExpressionElementToken::Proposition(PropositionIdentifier::from_char(
+                proposition_letter,
+            )),
             negation,
         )
     }
@@ -125,7 +127,7 @@ impl Expression {
     pub fn set_values(&mut self, permutation: u8) {
         // Set the proposition values in the current expression
         self.propositions.set_all(permutation);
-        
+
         use ExpressionElementToken::*;
 
         // Set the proposition values in all subexpressions recursively

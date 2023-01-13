@@ -1,6 +1,7 @@
 mod expressions;
 mod propositions;
 mod truth_table;
+
 pub use expressions::Expression;
 pub use propositions::PropositionIdentifier;
 pub use propositions::PropositionTable;
