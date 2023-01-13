@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::ops::Range;
 
 use crate::Expression;
@@ -8,13 +8,13 @@ use crate::PropositionIdentifier;
 // Proposition value permutations are encoded in u8s
 pub struct TruthTable {
     propositions: Vec<PropositionIdentifier>,
-    values_and_results: HashMap<u8, bool>,
+    values_and_results: BTreeMap<u8, bool>,
 }
 
 impl TruthTable {
     fn new(
         propositions: Vec<PropositionIdentifier>,
-        values_and_results: HashMap<u8, bool>,
+        values_and_results: BTreeMap<u8, bool>,
     ) -> Self {
         Self {
             propositions,
@@ -27,7 +27,7 @@ impl TruthTable {
         let proposition_count = expression.proposition_count();
 
         let mut propositions = Vec::new();
-        let mut values_and_results = HashMap::new();
+        let mut values_and_results = BTreeMap::new();
 
         // Get all propositions in the expression
         // It is assumed that the propositions are named A, B, C, and D, and will never be out of order
@@ -44,7 +44,6 @@ impl TruthTable {
         Self::new(propositions, values_and_results)
     }
 
-    // TODO: Sort permutations, HashMap does not do this by default
     pub fn print(&self) {
         let mut num_dividers = 8;
 
