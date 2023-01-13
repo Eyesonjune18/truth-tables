@@ -16,7 +16,7 @@ pub struct PropositionTable {
 }
 
 impl PropositionIdentifier {
-    // Returns the masked value of the proposition for a given permutation of propositions
+    // Returns the masked value of the proposition for a given permutation of propositions, in 0bDCBA format
     fn mask(&self, permutation: u8) -> bool {
         match self {
             Self::A => permutation & 0b0001 != 0,
@@ -65,7 +65,7 @@ impl PropositionTable {
     }
 
     // Parses a string into a PropositionTable
-    pub fn from_str(expression: &str) -> Self {
+    pub fn from_expression_str(expression: &str) -> Self {
         let mut propositions: HashMap<PropositionIdentifier, Option<bool>> = HashMap::new();
 
         for c in expression.chars() {
@@ -128,28 +128,28 @@ mod tests {
     #[test]
     fn test_validate_propositions() {
         let mut expression = "A";
-        assert!(PropositionTable::from_str(expression).validate());
+        assert!(PropositionTable::from_expression_str(expression).validate());
 
         expression = "A & B";
-        assert!(PropositionTable::from_str(expression).validate());
+        assert!(PropositionTable::from_expression_str(expression).validate());
 
         expression = "A & B & C";
-        assert!(PropositionTable::from_str(expression).validate());
+        assert!(PropositionTable::from_expression_str(expression).validate());
 
         expression = "A & B & C & D";
-        assert!(PropositionTable::from_str(expression).validate());
+        assert!(PropositionTable::from_expression_str(expression).validate());
 
         expression = "A & C & D";
-        assert!(!PropositionTable::from_str(expression).validate());
+        assert!(!PropositionTable::from_expression_str(expression).validate());
 
         expression = "B & C";
-        assert!(!PropositionTable::from_str(expression).validate());
+        assert!(!PropositionTable::from_expression_str(expression).validate());
     }
 
     #[test]
     fn test_set_values() {
         let expression = "A & B & C & D";
-        let mut table = PropositionTable::from_str(expression);
+        let mut table = PropositionTable::from_expression_str(expression);
 
         use PropositionIdentifier::*;
 

@@ -68,7 +68,7 @@ impl Expression {
     pub fn parse(expression_string: &str, validate_propositions: bool) -> Expression {
         let mut elements: Vec<ExpressionElement> = Vec::new();
         let mut operators: Vec<Operator> = Vec::new();
-        let propositions = PropositionTable::from_str(expression_string);
+        let propositions = PropositionTable::from_expression_str(expression_string);
 
         // Make sure that the expression does not skip propositions such as in (A, B, D) or (C, D)
         if validate_propositions && !propositions.validate() {
@@ -124,7 +124,7 @@ impl Expression {
     }
 
     // Recursively sets the values of all propositions in the expression and its subexpressions
-    pub fn set_values(&mut self, permutation: u8) {
+    fn set_values(&mut self, permutation: u8) {
         // Set the proposition values in the current expression
         self.propositions.set_all(permutation);
 
@@ -192,7 +192,7 @@ impl Expression {
 // Return the substring between the first pair of parentheses, excluding the parentheses themselves
 fn get_subexpression(expression: &str) -> String {
     // If the first character is not a '(', panic with an error message
-    if expression.chars().next().unwrap() != '(' {
+    if !expression.starts_with('(') {
         unreachable!("[INTERNAL ERROR] Subexpression must start with '('");
     }
 
