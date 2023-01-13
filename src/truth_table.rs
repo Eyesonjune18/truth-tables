@@ -11,6 +11,15 @@ pub struct TruthTable {
     values_and_results: BTreeMap<u8, bool>,
 }
 
+impl Default for TruthTable {
+    fn default() -> Self {
+        Self {
+            propositions: Vec::new(),
+            values_and_results: BTreeMap::new(),
+        }
+    }
+}
+
 impl TruthTable {
     fn new(
         propositions: Vec<PropositionIdentifier>,
