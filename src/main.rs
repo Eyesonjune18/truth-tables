@@ -21,13 +21,8 @@ fn main() {
     }
 
     match args[1].as_str() {
-        "-e" | "--expression" => {
-            let mut expression = Expression::parse(&args[2], true);
-            let table = TruthTable::from_expression(&mut expression);
-
-            table.print();
-        }
-        "-t" | "--truth-table" => todo!(),
+        "-e" | "--expression" => TruthTable::parse_expression_str(&args[2]).print(),
+        "-t" | "--truth-table" => TruthTable::parse_rows(&args[2]).print(),
         _ => panic!("Illegal input formatting based on given flag"),
     }
 }

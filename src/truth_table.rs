@@ -44,6 +44,17 @@ impl TruthTable {
         Self::new(propositions, values_and_results)
     }
 
+    // Parses a user-inputted set of rows into a truth table
+    pub fn parse_rows(rows: &str) -> Self {
+        todo!()
+    }
+
+    // Parses a user-inputted string into an Expression, then into a truth table
+    pub fn parse_expression_str(expression: &str) -> Self {
+        let mut expression = Expression::parse(expression, true);
+        Self::from_expression(&mut expression)
+    }
+
     pub fn print(&self) {
         let mut num_dividers = 8;
 
