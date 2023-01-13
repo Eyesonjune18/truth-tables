@@ -35,15 +35,8 @@ impl TruthTable {
     pub fn from_expression(expression: &mut Expression) -> Self {
         let proposition_count = expression.proposition_count();
 
-        let mut propositions = Vec::new();
+        let propositions = get_propositions(proposition_count);
         let mut values_and_results = BTreeMap::new();
-
-        // Get all propositions in the expression
-        // It is assumed that the propositions are named A, B, C, and D, and will never be out of order
-        // TODO: Get this from the expression?
-        for i in 0..proposition_count {
-            propositions.push(PropositionIdentifier::from_int(i));
-        }
 
         // Generate all possible permutations of the propositions
         for permutation in get_bit_permutations(proposition_count) {
@@ -55,7 +48,17 @@ impl TruthTable {
 
     // Parses a user-inputted set of rows into a truth table
     pub fn parse_rows(rows: &str) -> Self {
-        todo!()
+        // Split and validate the user-inputted rows
+        let rows = rows.split(", ").collect::<Vec<&str>>();
+        validate_rows(&rows);
+
+        // Get the propositions based on the number of columns
+        let propositions = get_propositions((rows[0].len() - 1) as u8);
+
+        // Parse the rows into a map of permutations and their results
+        let values_and_results = rows_to_value_map(rows);
+
+        Self::new(propositions, values_and_results)
     }
 
     // Parses a user-inputted string into an Expression, then into a truth table
@@ -64,6 +67,7 @@ impl TruthTable {
         Self::from_expression(&mut expression)
     }
 
+    // Formats and prints the truth table
     pub fn print(&self) {
         let mut num_dividers = 8;
 
@@ -99,6 +103,62 @@ impl TruthTable {
 
         println!();
     }
+}
+
+// Checks a set of rows against formatting requirements
+fn validate_rows(rows: &Vec<&str>) {
+    // Make sure all rows contain only '0' and '1'
+    for row in rows {
+        for c in row.chars() {
+            if c != '0' && c != '1' {
+                panic!("Invalid character '{}' found in row '{}'", c, row);
+            }
+        }
+    }
+
+    // Make sure all rows are the same length, and that they are within the range of 2 to 5
+    let row_size = rows[0].len();
+
+    if row_size < 2 || row_size > 5 {
+        panic!("Row size must be between 2 and 5, representing up to four proposition rows and one result row");
+    }
+
+    for row in rows {
+        if row.len() != row_size {
+            panic!("All rows must be the same length");
+        }
+    }
+}
+
+// Gets a list of propositions based on the given count
+// It is assumed that the propositions are named A, B, C, and D, and will never be out of order
+fn get_propositions(proposition_count: u8) -> Vec<PropositionIdentifier> {
+    let mut propositions = Vec::new();
+    
+    for i in 0..proposition_count {
+        propositions.push(PropositionIdentifier::from_int(i));
+    }
+    
+    propositions
+}
+
+// Parses a set of string-encoded rows into a map of permutations and their results
+// TODO: Make this more readable
+fn rows_to_value_map(rows: Vec<&str>) -> BTreeMap<u8, bool> {
+    let mut values_and_results = BTreeMap::new();
+
+    for row in rows {
+        let permutation = row[0..row.len() - 1]
+            .chars()
+            .rev()
+            .enumerate()
+            .fold(0, |acc, (i, c)| acc | ((c as u8 - '0' as u8) << i));
+        let result = row.chars().last().unwrap() == '1';
+
+        values_and_results.insert(permutation, result);
+    }
+
+    values_and_results
 }
 
 // Gets a range of numbers with all possible permutations of a given number of bits
