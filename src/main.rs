@@ -15,8 +15,8 @@ fn main() {
         panic!("Usage: {} <expression>", args[0]);
     }
 
-    let expression = Expression::parse(&args[1], true);
-    let table = TruthTable::from_expression(expression);
+    let mut expression = Expression::parse(&args[1], true);
+    let table = TruthTable::from_expression(&mut expression);
 
     table.print();
 }

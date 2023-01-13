@@ -7,28 +7,23 @@ use crate::PropositionIdentifier;
 // Represents a truth table for a given expression
 // Proposition value permutations are encoded in u8s
 pub struct TruthTable {
-    #[allow(dead_code)]
-    // TODO: Not sure whether this is needed or not, keeping for now
-    expression: Expression,
     propositions: Vec<PropositionIdentifier>,
     values_and_results: HashMap<u8, bool>,
 }
 
 impl TruthTable {
     fn new(
-        expression: Expression,
         propositions: Vec<PropositionIdentifier>,
         values_and_results: HashMap<u8, bool>,
     ) -> Self {
         Self {
-            expression,
             propositions,
             values_and_results,
         }
     }
 
     // Creates a new truth table for a given expression
-    pub fn from_expression(mut expression: Expression) -> Self {
+    pub fn from_expression(expression: &mut Expression) -> Self {
         let proposition_count = expression.proposition_count();
 
         let mut propositions = Vec::new();
@@ -46,7 +41,7 @@ impl TruthTable {
             values_and_results.insert(permutation, expression.evaluate_permutation(permutation));
         }
 
-        Self::new(expression, propositions, values_and_results)
+        Self::new(propositions, values_and_results)
     }
 
     // TODO: Fix code, this is auto-generated
