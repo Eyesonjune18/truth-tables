@@ -43,7 +43,7 @@ impl ExpressionElement {
     // TODO: Add range checking here? Probably not necessary
     fn from_proposition(proposition_letter: char, negation: bool) -> Self {
         Self::new(
-            ExpressionElementToken::Proposition(PropositionIdentifier::from(proposition_letter)),
+            ExpressionElementToken::Proposition(PropositionIdentifier::from_char(proposition_letter)),
             negation,
         )
     }
@@ -66,7 +66,7 @@ impl Expression {
     pub fn parse(expression_string: &str, validate_propositions: bool) -> Expression {
         let mut elements: Vec<ExpressionElement> = Vec::new();
         let mut operators: Vec<Operator> = Vec::new();
-        let propositions = PropositionTable::from(expression_string);
+        let propositions = PropositionTable::from_str(expression_string);
 
         // Make sure that the expression does not skip propositions such as in (A, B, D) or (C, D)
         if validate_propositions && !propositions.validate() {
@@ -122,16 +122,16 @@ impl Expression {
     }
 
     // Recursively sets the values of all propositions in the expression and its subexpressions
-    pub fn set_values(&mut self, values: u8) {
+    pub fn set_values(&mut self, permutation: u8) {
         // Set the proposition values in the current expression
-        self.propositions.set_all(values);
+        self.propositions.set_all(permutation);
         
         use ExpressionElementToken::*;
 
         // Set the proposition values in all subexpressions recursively
         for element in &mut self.elements {
             match &mut element.token {
-                Subexpression(e) => e.set_values(values),
+                Subexpression(e) => e.set_values(permutation),
                 Proposition(_) => (),
             }
         }
@@ -175,15 +175,16 @@ impl Expression {
         result
     }
 
-    // // Evaluates all permutations of the expression and returns the result
-    // pub fn evaluate_all_permutations() -> Vec<bool> {
-    //     todo!()
-    // }
+    // Returns the number of propositions in the expression
+    pub fn proposition_count(&self) -> u8 {
+        self.propositions.count()
+    }
 
-    // // Evaluates a single permutation of propositions
-    // pub fn evaluate_single(&self) -> bool {
-    //     todo!()
-    // }
+    // Evaluates a single permutation of propositions
+    pub fn evaluate_permutation(&mut self, permutation: u8) -> bool {
+        self.set_values(permutation);
+        self.evaluate()
+    }
 }
 
 // Return the substring between the first pair of parentheses, excluding the parentheses themselves
@@ -256,13 +257,13 @@ mod tests {
         expression.set_values(0b0000);
         assert!(!expression.evaluate());
 
-        expression.set_values(0b0100);
+        expression.set_values(0b0010);
         assert!(!expression.evaluate());
 
-        expression.set_values(0b1000);
+        expression.set_values(0b0001);
         assert!(!expression.evaluate());
 
-        expression.set_values(0b1100);
+        expression.set_values(0b0011);
         assert!(expression.evaluate());
 
         expression = Expression::parse("!A & !B", true);
@@ -270,13 +271,13 @@ mod tests {
         expression.set_values(0b0000);
         assert!(expression.evaluate());
 
-        expression.set_values(0b0100);
+        expression.set_values(0b0010);
         assert!(!expression.evaluate());
 
-        expression.set_values(0b1000);
+        expression.set_values(0b0001);
         assert!(!expression.evaluate());
 
-        expression.set_values(0b1100);
+        expression.set_values(0b0011);
         assert!(!expression.evaluate());
     }
 
@@ -288,12 +289,12 @@ mod tests {
             expression.set_values(i);
             assert_eq!(
                 expression.evaluate(),
-                i == 0b0011
-                    || i == 0b0111
-                    || i == 0b1011
-                    || i == 0b1100
-                    || i == 0b1101
+                i == 0b1100
                     || i == 0b1110
+                    || i == 0b1101
+                    || i == 0b0011
+                    || i == 0b1011
+                    || i == 0b0111
                     || i == 0b1111
             );
         }
