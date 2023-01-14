@@ -59,6 +59,7 @@ impl TruthTable {
         Self::new(propositions, values_and_results)
     }
 
+    // Converts the truth table into a string representation of the expression
     pub fn to_expression_str(&self) -> String {
         // Get the number of propositions in the truth table
         let proposition_count = self.propositions.len() as u8;
