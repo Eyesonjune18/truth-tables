@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use std::ops::Range;
 
 use crate::Expression;
 use crate::PropositionIdentifier;
@@ -170,8 +169,14 @@ fn decode_permutation(row: &str) -> u8 {
 }
 
 // Gets a range of numbers with all possible permutations of a given number of bits
-fn get_bit_permutations(bits: u8) -> Range<u8> {
-    0..(1 << bits)
+fn get_bit_permutations(bits: u8) -> Vec<u8> {
+    let mut permutations = Vec::new();
+
+    for i in 0u8..(1 << bits) {
+        permutations.push(i.reverse_bits() >> 4);
+    }
+
+    permutations
 }
 
 #[cfg(test)]
@@ -180,16 +185,10 @@ mod tests {
 
     #[test]
     fn test_get_bit_permutations() {
-        assert_eq!(get_bit_permutations(0).collect::<Vec<u8>>(), vec![0]);
-        assert_eq!(get_bit_permutations(1).collect::<Vec<u8>>(), vec![0, 1]);
-        assert_eq!(
-            get_bit_permutations(2).collect::<Vec<u8>>(),
-            vec![0, 1, 2, 3]
-        );
-        assert_eq!(
-            get_bit_permutations(3).collect::<Vec<u8>>(),
-            vec![0, 1, 2, 3, 4, 5, 6, 7]
-        );
+        assert_eq!(get_bit_permutations(0), vec![0]);
+        assert_eq!(get_bit_permutations(1), vec![0, 1]);
+        assert_eq!(get_bit_permutations(2), vec![0, 1, 2, 3]);
+        assert_eq!(get_bit_permutations(3), vec![0, 1, 2, 3, 4, 5, 6, 7]);
     }
 
     #[test]
