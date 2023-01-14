@@ -259,13 +259,13 @@ mod tests {
         expression.set_values(0b0000);
         assert!(!expression.evaluate());
 
-        expression.set_values(0b0010);
+        expression.set_values(0b010);
         assert!(!expression.evaluate());
 
-        expression.set_values(0b0001);
+        expression.set_values(0b1000);
         assert!(!expression.evaluate());
 
-        expression.set_values(0b0011);
+        expression.set_values(0b1100);
         assert!(expression.evaluate());
 
         expression = Expression::parse("!A & !B", true);
@@ -273,13 +273,13 @@ mod tests {
         expression.set_values(0b0000);
         assert!(expression.evaluate());
 
-        expression.set_values(0b0010);
+        expression.set_values(0b0100);
         assert!(!expression.evaluate());
 
-        expression.set_values(0b0001);
+        expression.set_values(0b1000);
         assert!(!expression.evaluate());
 
-        expression.set_values(0b0011);
+        expression.set_values(0b1100);
         assert!(!expression.evaluate());
     }
 

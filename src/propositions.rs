@@ -16,13 +16,13 @@ pub struct PropositionTable {
 }
 
 impl PropositionIdentifier {
-    // Returns the masked value of the proposition for a given permutation of propositions, in 0bDCBA format
-    fn mask(&self, permutation: u8) -> bool {
+    // Returns the masked value of the proposition for a given permutation of propositions, in 0bABCD format
+    pub fn mask(&self, permutation: u8) -> bool {
         match self {
-            Self::A => permutation & 0b0001 != 0,
-            Self::B => permutation & 0b0010 != 0,
-            Self::C => permutation & 0b0100 != 0,
-            Self::D => permutation & 0b1000 != 0,
+            Self::A => permutation & 0b1000 != 0,
+            Self::B => permutation & 0b0100 != 0,
+            Self::C => permutation & 0b0010 != 0,
+            Self::D => permutation & 0b0001 != 0,
         }
     }
 
@@ -169,9 +169,9 @@ mod tests {
 
         table.set_all(0b0101);
 
-        assert_eq!(table.get_value(&A), Some(true));
-        assert_eq!(table.get_value(&B), Some(false));
-        assert_eq!(table.get_value(&C), Some(true));
-        assert_eq!(table.get_value(&D), Some(false));
+        assert_eq!(table.get_value(&A), Some(false));
+        assert_eq!(table.get_value(&B), Some(true));
+        assert_eq!(table.get_value(&C), Some(false));
+        assert_eq!(table.get_value(&D), Some(true));
     }
 }

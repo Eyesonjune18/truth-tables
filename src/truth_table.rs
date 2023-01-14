@@ -91,9 +91,8 @@ impl TruthTable {
 
         // Print the values and results
         for (permutation, result) in &self.values_and_results {
-            for i in 0..self.propositions.len() {
-                // Mask out the appropriate bit and turn it into a 0 or a 1
-                let proposition_bit = (permutation & (1 << i)) >> i;
+            for proposition in &self.propositions {
+                let proposition_bit = proposition.mask(*permutation) as u8;
                 print!("{} ", proposition_bit);
             }
 
@@ -167,13 +166,7 @@ fn decode_permutation(row: &str) -> u8 {
     let proposition_count = row.len();
 
     // Convert to bits and shift based on amount of skipped propositions (0bA/0bAB/0bABC/0bABCD -> 0b0000ABCD)
-    let mut permutation = u8::from_str_radix(row, 2).unwrap() << (4 - proposition_count);
-
-    // Reverse the bits (0b0000ABCD -> 0bDCBA0000)
-    permutation = permutation.reverse_bits();
-    
-    // Shift right by 4 to move the bits into the LSB half (0bDCBA0000 -> 0b0000DCBA)
-    permutation >> 4
+    u8::from_str_radix(row, 2).unwrap() << (4 - proposition_count)
 }
 
 // Gets a range of numbers with all possible permutations of a given number of bits
@@ -202,21 +195,21 @@ mod tests {
     #[test]
     fn test_decode_permutations() {
         assert_eq!(decode_permutation("01"), 0b0000);
-        assert_eq!(decode_permutation("11"), 0b0001);
-        assert_eq!(decode_permutation("101"), 0b0001);
-        assert_eq!(decode_permutation("111"), 0b0011);
-        assert_eq!(decode_permutation("011"), 0b0010);
-        assert_eq!(decode_permutation("1001"), 0b0001);
-        assert_eq!(decode_permutation("1011"), 0b0101);
-        assert_eq!(decode_permutation("1101"), 0b0011);
-        assert_eq!(decode_permutation("1111"), 0b0111);
-        assert_eq!(decode_permutation("10001"), 0b0001);
+        assert_eq!(decode_permutation("11"), 0b1000);
+        assert_eq!(decode_permutation("101"), 0b1000);
+        assert_eq!(decode_permutation("111"), 0b1100);
+        assert_eq!(decode_permutation("011"), 0b0100);
+        assert_eq!(decode_permutation("1001"), 0b1000);
+        assert_eq!(decode_permutation("1011"), 0b1010);
+        assert_eq!(decode_permutation("1101"), 0b1100);
+        assert_eq!(decode_permutation("1111"), 0b1110);
+        assert_eq!(decode_permutation("10001"), 0b1000);
         assert_eq!(decode_permutation("10011"), 0b1001);
-        assert_eq!(decode_permutation("10101"), 0b0101);
-        assert_eq!(decode_permutation("10111"), 0b1101);
-        assert_eq!(decode_permutation("11001"), 0b0011);
-        assert_eq!(decode_permutation("11011"), 0b1011);
-        assert_eq!(decode_permutation("11101"), 0b0111);
+        assert_eq!(decode_permutation("10101"), 0b1010);
+        assert_eq!(decode_permutation("10111"), 0b1011);
+        assert_eq!(decode_permutation("11001"), 0b1100);
+        assert_eq!(decode_permutation("11011"), 0b1101);
+        assert_eq!(decode_permutation("11101"), 0b1110);
         assert_eq!(decode_permutation("11111"), 0b1111);
     }
 }
