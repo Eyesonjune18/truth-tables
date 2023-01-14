@@ -22,7 +22,7 @@ fn main() {
 
     match args[1].as_str() {
         "-e" | "--expression" => TruthTable::parse_expression_str(&args[2]).print(),
-        "-t" | "--truth-table" => println!("{}", TruthTable::parse_rows(&args[2]).to_expression_str()),
+        "-t" | "--truth-table" => println!("{}", TruthTable::parse_rows(&args[2]).to_disjunction()),
         _ => panic!("Illegal input formatting based on given flag"),
     }
 }

@@ -60,7 +60,7 @@ impl TruthTable {
     }
 
     // Converts the truth table into a string representation of the expression
-    pub fn to_expression_str(&self) -> String {
+    pub fn to_disjunction(&self) -> String {
         // Get the number of propositions in the truth table
         let proposition_count = self.propositions.len() as u8;
 
@@ -195,15 +195,19 @@ fn encode_conjunction(permutation: u8, proposition_count: u8) -> String {
 
     for i in 0..proposition_count {
         let proposition = PropositionIdentifier::from_int(i);
-        let proposition_value = proposition.mask(permutation);
 
-        if proposition_value {
-            if conjunction != "(" && i != proposition_count {
-                conjunction.push_str(" & ");
-            }
-
-            conjunction.push(proposition.to_char());
+        // Add operators between propositions
+        if conjunction != "(" && i != proposition_count {
+            conjunction.push_str(" & ");
         }
+
+        // If the proposition is false, denote that it is negated
+        if !proposition.mask(permutation) {
+            conjunction.push('!');
+        }
+
+        // Append the proposition letter
+        conjunction.push(proposition.to_char());
     }
 
     conjunction.push(')');
@@ -254,5 +258,46 @@ mod tests {
         assert_eq!(decode_permutation_str("11011"), 0b1101);
         assert_eq!(decode_permutation_str("11101"), 0b1110);
         assert_eq!(decode_permutation_str("11111"), 0b1111);
+    }
+
+    #[test]
+    fn test_encode_conjunction() {
+        assert_eq!(encode_conjunction(0b0000, 1), "(!A)");
+        assert_eq!(encode_conjunction(0b1000, 1), "(A)");
+        assert_eq!(encode_conjunction(0b0100, 2), "(!A & B)");
+        assert_eq!(encode_conjunction(0b1100, 2), "(A & B)");
+        assert_eq!(encode_conjunction(0b0010, 3), "(!A & !B & C)");
+        assert_eq!(encode_conjunction(0b1010, 3), "(A & !B & C)");
+        assert_eq!(encode_conjunction(0b0110, 3), "(!A & B & C)");
+        assert_eq!(encode_conjunction(0b1110, 3), "(A & B & C)");
+        assert_eq!(encode_conjunction(0b0001, 4), "(!A & !B & !C & D)");
+        assert_eq!(encode_conjunction(0b1001, 4), "(A & !B & !C & D)");
+        assert_eq!(encode_conjunction(0b0101, 4), "(!A & B & !C & D)");
+        assert_eq!(encode_conjunction(0b1101, 4), "(A & B & !C & D)");
+        assert_eq!(encode_conjunction(0b0011, 4), "(!A & !B & C & D)");
+        assert_eq!(encode_conjunction(0b1011, 4), "(A & !B & C & D)");
+        assert_eq!(encode_conjunction(0b0111, 4), "(!A & B & C & D)");
+        assert_eq!(encode_conjunction(0b1111, 4), "(A & B & C & D)");
+    }
+
+    #[test]
+    fn test_to_disjunction() {
+        let table = TruthTable::parse_expression_str("A & B & C & D");
+        assert_eq!(table.to_disjunction(), "(A & B & C & D)");
+
+        let table = TruthTable::parse_expression_str("A & B & C & !D");
+        assert_eq!(table.to_disjunction(), "(A & B & C & !D)");
+
+        let table = TruthTable::parse_expression_str("A & B & !C & D");
+        assert_eq!(table.to_disjunction(), "(A & B & !C & D)");
+
+        let table = TruthTable::parse_expression_str("A & B & !C & !D");
+        assert_eq!(table.to_disjunction(), "(A & B & !C & !D)");
+
+        let table = TruthTable::parse_expression_str("A & !B & C & D");
+        assert_eq!(table.to_disjunction(), "(A & !B & C & D)");
+
+        let table = TruthTable::parse_expression_str("(A & B) | C");
+        assert_eq!(table.to_disjunction(), "(!A & !B & C) | (!A & B & C) | (A & !B & C) | (A & B & !C) | (A & B & C)");
     }
 }
