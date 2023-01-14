@@ -185,10 +185,11 @@ mod tests {
 
     #[test]
     fn test_get_bit_permutations() {
-        assert_eq!(get_bit_permutations(0), vec![0]);
-        assert_eq!(get_bit_permutations(1), vec![0, 1]);
-        assert_eq!(get_bit_permutations(2), vec![0, 1, 2, 3]);
-        assert_eq!(get_bit_permutations(3), vec![0, 1, 2, 3, 4, 5, 6, 7]);
+        assert_eq!(get_bit_permutations(0), vec![0b0000]);
+        assert_eq!(get_bit_permutations(1), vec![0b0000, 0b1000]);
+        assert_eq!(get_bit_permutations(2), vec![0b0000, 0b1000, 0b0100, 0b1100]);
+        assert_eq!(get_bit_permutations(3), vec![0b0000, 0b1000, 0b0100, 0b1100, 0b0010, 0b1010, 0b0110, 0b1110]);
+        assert_eq!(get_bit_permutations(4), vec![0b0000, 0b1000, 0b0100, 0b1100, 0b0010, 0b1010, 0b0110, 0b1110, 0b0001, 0b1001, 0b0101, 0b1101, 0b0011, 0b1011, 0b0111, 0b1111]);
     }
 
     #[test]
