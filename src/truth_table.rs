@@ -50,7 +50,6 @@ impl TruthTable {
     pub fn parse_rows(rows: &str) -> Self {
         // Split and validate the user-inputted rows
         let rows = rows.split(", ").collect::<Vec<&str>>();
-        validate_rows(&rows);
 
         // Get the propositions based on the number of columns
         let propositions = get_propositions((rows[0].len() - 1) as u8);
@@ -143,22 +142,38 @@ fn get_propositions(proposition_count: u8) -> Vec<PropositionIdentifier> {
 }
 
 // Parses a set of string-encoded rows into a map of permutations and their results
-// TODO: Make this more readable
 fn rows_to_value_map(rows: Vec<&str>) -> BTreeMap<u8, bool> {
+    // Ensure the rows are valid before attempting to parse them
+    validate_rows(&rows);
+
     let mut values_and_results = BTreeMap::new();
 
     for row in rows {
-        let permutation = row[0..row.len() - 1]
-            .chars()
-            .rev()
-            .enumerate()
-            .fold(0, |acc, (i, c)| acc | ((c as u8 - '0' as u8) << i));
+        let permutation = decode_permutation(row);
         let result = row.chars().last().unwrap() == '1';
 
         values_and_results.insert(permutation, result);
     }
 
     values_and_results
+}
+
+// Takes a string-encoded row and decodes it into a value permutation
+fn decode_permutation(row: &str) -> u8 {
+    // Last character is the result, so it is ignored
+    let row = &row[0..row.len() - 1];
+
+    // Find the number of propositions
+    let proposition_count = row.len();
+
+    // Convert to bits and shift based on amount of skipped propositions (0bA/0bAB/0bABC/0bABCD -> 0b0000ABCD)
+    let mut permutation = u8::from_str_radix(row, 2).unwrap() << (4 - proposition_count);
+
+    // Reverse the bits (0b0000ABCD -> 0bDCBA0000)
+    permutation = permutation.reverse_bits();
+    
+    // Shift right by 4 to move the bits into the LSB half (0bDCBA0000 -> 0b0000DCBA)
+    permutation >> 4
 }
 
 // Gets a range of numbers with all possible permutations of a given number of bits
@@ -182,5 +197,26 @@ mod tests {
             get_bit_permutations(3).collect::<Vec<u8>>(),
             vec![0, 1, 2, 3, 4, 5, 6, 7]
         );
+    }
+
+    #[test]
+    fn test_decode_permutations() {
+        assert_eq!(decode_permutation("01"), 0b0000);
+        assert_eq!(decode_permutation("11"), 0b0001);
+        assert_eq!(decode_permutation("101"), 0b0001);
+        assert_eq!(decode_permutation("111"), 0b0011);
+        assert_eq!(decode_permutation("011"), 0b0010);
+        assert_eq!(decode_permutation("1001"), 0b0001);
+        assert_eq!(decode_permutation("1011"), 0b0101);
+        assert_eq!(decode_permutation("1101"), 0b0011);
+        assert_eq!(decode_permutation("1111"), 0b0111);
+        assert_eq!(decode_permutation("10001"), 0b0001);
+        assert_eq!(decode_permutation("10011"), 0b1001);
+        assert_eq!(decode_permutation("10101"), 0b0101);
+        assert_eq!(decode_permutation("10111"), 0b1101);
+        assert_eq!(decode_permutation("11001"), 0b0011);
+        assert_eq!(decode_permutation("11011"), 0b1011);
+        assert_eq!(decode_permutation("11101"), 0b0111);
+        assert_eq!(decode_permutation("11111"), 0b1111);
     }
 }
