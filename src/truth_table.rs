@@ -31,7 +31,7 @@ impl TruthTable {
     }
 
     // Creates a new truth table for a given expression
-    pub fn from_expression(expression: &mut Expression) -> Self {
+    fn from_expression(expression: &mut Expression) -> Self {
         let proposition_count = expression.proposition_count();
 
         let propositions = get_propositions(proposition_count);
@@ -57,6 +57,26 @@ impl TruthTable {
         let values_and_results = rows_to_value_map(rows);
 
         Self::new(propositions, values_and_results)
+    }
+
+    pub fn to_expression_str(&self) -> String {
+        // Get the number of propositions in the truth table
+        let proposition_count = self.propositions.len() as u8;
+
+        // Add a conjunction for each permutation that evaluates to true
+        let mut expression = String::new();
+
+        for (permutation, result) in &self.values_and_results {
+            if *result {
+                if !expression.is_empty() {
+                    expression.push_str(" | ");
+                }
+
+                expression.push_str(encode_conjunction(*permutation, proposition_count).as_str());
+            }
+        }
+
+        expression
     }
 
     // Parses a user-inputted string into an Expression, then into a truth table
@@ -147,7 +167,7 @@ fn rows_to_value_map(rows: Vec<&str>) -> BTreeMap<u8, bool> {
     let mut values_and_results = BTreeMap::new();
 
     for row in rows {
-        let permutation = decode_permutation(row);
+        let permutation = decode_permutation_str(row);
         let result = row.chars().last().unwrap() == '1';
 
         values_and_results.insert(permutation, result);
@@ -157,7 +177,7 @@ fn rows_to_value_map(rows: Vec<&str>) -> BTreeMap<u8, bool> {
 }
 
 // Takes a string-encoded row and decodes it into a value permutation
-fn decode_permutation(row: &str) -> u8 {
+fn decode_permutation_str(row: &str) -> u8 {
     // Last character is the result, so it is ignored
     let row = &row[0..row.len() - 1];
 
@@ -166,6 +186,28 @@ fn decode_permutation(row: &str) -> u8 {
 
     // Convert to bits and shift based on amount of skipped propositions (0bA/0bAB/0bABC/0bABCD -> 0b0000ABCD)
     u8::from_str_radix(row, 2).unwrap() << (4 - proposition_count)
+}
+
+// Takes a value permutation and encodes it into
+fn encode_conjunction(permutation: u8, proposition_count: u8) -> String {
+    let mut conjunction = String::from('(');
+
+    for i in 0..proposition_count {
+        let proposition = PropositionIdentifier::from_int(i);
+        let proposition_value = proposition.mask(permutation);
+
+        if proposition_value {
+            if conjunction != "(" && i != proposition_count {
+                conjunction.push_str(" & ");
+            }
+
+            conjunction.push(proposition.to_char());
+        }
+    }
+
+    conjunction.push(')');
+
+    conjunction
 }
 
 // Gets a range of numbers with all possible permutations of a given number of bits
@@ -194,22 +236,22 @@ mod tests {
 
     #[test]
     fn test_decode_permutations() {
-        assert_eq!(decode_permutation("01"), 0b0000);
-        assert_eq!(decode_permutation("11"), 0b1000);
-        assert_eq!(decode_permutation("101"), 0b1000);
-        assert_eq!(decode_permutation("111"), 0b1100);
-        assert_eq!(decode_permutation("011"), 0b0100);
-        assert_eq!(decode_permutation("1001"), 0b1000);
-        assert_eq!(decode_permutation("1011"), 0b1010);
-        assert_eq!(decode_permutation("1101"), 0b1100);
-        assert_eq!(decode_permutation("1111"), 0b1110);
-        assert_eq!(decode_permutation("10001"), 0b1000);
-        assert_eq!(decode_permutation("10011"), 0b1001);
-        assert_eq!(decode_permutation("10101"), 0b1010);
-        assert_eq!(decode_permutation("10111"), 0b1011);
-        assert_eq!(decode_permutation("11001"), 0b1100);
-        assert_eq!(decode_permutation("11011"), 0b1101);
-        assert_eq!(decode_permutation("11101"), 0b1110);
-        assert_eq!(decode_permutation("11111"), 0b1111);
+        assert_eq!(decode_permutation_str("01"), 0b0000);
+        assert_eq!(decode_permutation_str("11"), 0b1000);
+        assert_eq!(decode_permutation_str("101"), 0b1000);
+        assert_eq!(decode_permutation_str("111"), 0b1100);
+        assert_eq!(decode_permutation_str("011"), 0b0100);
+        assert_eq!(decode_permutation_str("1001"), 0b1000);
+        assert_eq!(decode_permutation_str("1011"), 0b1010);
+        assert_eq!(decode_permutation_str("1101"), 0b1100);
+        assert_eq!(decode_permutation_str("1111"), 0b1110);
+        assert_eq!(decode_permutation_str("10001"), 0b1000);
+        assert_eq!(decode_permutation_str("10011"), 0b1001);
+        assert_eq!(decode_permutation_str("10101"), 0b1010);
+        assert_eq!(decode_permutation_str("10111"), 0b1011);
+        assert_eq!(decode_permutation_str("11001"), 0b1100);
+        assert_eq!(decode_permutation_str("11011"), 0b1101);
+        assert_eq!(decode_permutation_str("11101"), 0b1110);
+        assert_eq!(decode_permutation_str("11111"), 0b1111);
     }
 }
