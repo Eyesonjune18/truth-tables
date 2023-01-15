@@ -189,7 +189,7 @@ fn decode_permutation_str(row: &str) -> u8 {
     u8::from_str_radix(row, 2).unwrap() << (4 - proposition_count)
 }
 
-// Takes a value permutation and encodes it into
+// Takes a value permutation and encodes it into a conjunction in parentheses such as "(A & B & C)"
 fn encode_conjunction(permutation: u8, proposition_count: u8) -> String {
     let mut conjunction = String::from('(');
 
